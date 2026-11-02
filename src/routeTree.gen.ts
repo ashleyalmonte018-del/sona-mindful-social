@@ -18,6 +18,7 @@ import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
 
@@ -65,6 +66,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
   id: '/vibe',
   path: '/vibe',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof AuthenticatedFeedRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
 }
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/feed': typeof AuthenticatedFeedRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
 }
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
   '/_authenticated/zone': typeof AuthenticatedZoneRoute
 }
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/profile'
     | '/settings'
+    | '/studio'
     | '/vibe'
     | '/zone'
   fileRoutesByTo: FileRoutesByTo
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/profile'
     | '/settings'
+    | '/studio'
     | '/vibe'
     | '/zone'
   id:
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/_authenticated/feed'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
+    | '/_authenticated/studio'
     | '/_authenticated/vibe'
     | '/_authenticated/zone'
   fileRoutesById: FileRoutesById
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/studio': {
+      id: '/_authenticated/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AuthenticatedStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/vibe': {
       id: '/_authenticated/vibe'
       path: '/vibe'
@@ -249,6 +268,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
   AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
 }
@@ -260,6 +280,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedVibeRoute: AuthenticatedVibeRoute,
   AuthenticatedZoneRoute: AuthenticatedZoneRoute,
 }
