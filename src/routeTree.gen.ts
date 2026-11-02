@@ -10,33 +10,166 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/care'
+import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
+import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
+import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
+import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
+import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
+import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCareRoute = AuthenticatedCareRouteImport.update({
+  id: '/care',
+  path: '/care',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCircleRoute = AuthenticatedCircleRouteImport.update({
+  id: '/circle',
+  path: '/circle',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCurateRoute = AuthenticatedCurateRouteImport.update({
+  id: '/curate',
+  path: '/curate',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
+  id: '/vibe',
+  path: '/vibe',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
+  id: '/zone',
+  path: '/zone',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/care': typeof AuthenticatedCareRoute
+  '/circle': typeof AuthenticatedCircleRoute
+  '/curate': typeof AuthenticatedCurateRoute
+  '/feed': typeof AuthenticatedFeedRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
+  '/vibe': typeof AuthenticatedVibeRoute
+  '/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
+  '/care': typeof AuthenticatedCareRoute
+  '/circle': typeof AuthenticatedCircleRoute
+  '/curate': typeof AuthenticatedCurateRoute
+  '/feed': typeof AuthenticatedFeedRoute
+  '/profile': typeof AuthenticatedProfileRoute
+  '/settings': typeof AuthenticatedSettingsRoute
+  '/studio': typeof AuthenticatedStudioRoute
+  '/vibe': typeof AuthenticatedVibeRoute
+  '/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/auth': typeof AuthRoute
+  '/_authenticated/care': typeof AuthenticatedCareRoute
+  '/_authenticated/circle': typeof AuthenticatedCircleRoute
+  '/_authenticated/curate': typeof AuthenticatedCurateRoute
+  '/_authenticated/feed': typeof AuthenticatedFeedRoute
+  '/_authenticated/profile': typeof AuthenticatedProfileRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/studio': typeof AuthenticatedStudioRoute
+  '/_authenticated/vibe': typeof AuthenticatedVibeRoute
+  '/_authenticated/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/care'
+    | '/circle'
+    | '/curate'
+    | '/feed'
+    | '/profile'
+    | '/settings'
+    | '/studio'
+    | '/vibe'
+    | '/zone'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/auth'
+    | '/care'
+    | '/circle'
+    | '/curate'
+    | '/feed'
+    | '/profile'
+    | '/settings'
+    | '/studio'
+    | '/vibe'
+    | '/zone'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/care'
+    | '/_authenticated/circle'
+    | '/_authenticated/curate'
+    | '/_authenticated/feed'
+    | '/_authenticated/profile'
+    | '/_authenticated/settings'
+    | '/_authenticated/studio'
+    | '/_authenticated/vibe'
+    | '/_authenticated/zone'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthRoute: typeof AuthRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +181,117 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/care': {
+      id: '/_authenticated/care'
+      path: '/care'
+      fullPath: '/care'
+      preLoaderRoute: typeof AuthenticatedCareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/circle': {
+      id: '/_authenticated/circle'
+      path: '/circle'
+      fullPath: '/circle'
+      preLoaderRoute: typeof AuthenticatedCircleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/curate': {
+      id: '/_authenticated/curate'
+      path: '/curate'
+      fullPath: '/curate'
+      preLoaderRoute: typeof AuthenticatedCurateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/feed': {
+      id: '/_authenticated/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof AuthenticatedFeedRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/profile': {
+      id: '/_authenticated/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AuthenticatedProfileRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/studio': {
+      id: '/_authenticated/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof AuthenticatedStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/vibe': {
+      id: '/_authenticated/vibe'
+      path: '/vibe'
+      fullPath: '/vibe'
+      preLoaderRoute: typeof AuthenticatedVibeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/zone': {
+      id: '/_authenticated/zone'
+      path: '/zone'
+      fullPath: '/zone'
+      preLoaderRoute: typeof AuthenticatedZoneRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCareRoute: typeof AuthenticatedCareRoute
+  AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
+  AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
+  AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
+  AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
+  AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
+  AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCareRoute: AuthenticatedCareRoute,
+  AuthenticatedCircleRoute: AuthenticatedCircleRoute,
+  AuthenticatedCurateRoute: AuthenticatedCurateRoute,
+  AuthenticatedFeedRoute: AuthenticatedFeedRoute,
+  AuthenticatedProfileRoute: AuthenticatedProfileRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedStudioRoute: AuthenticatedStudioRoute,
+  AuthenticatedVibeRoute: AuthenticatedVibeRoute,
+  AuthenticatedZoneRoute: AuthenticatedZoneRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthRoute: AuthRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

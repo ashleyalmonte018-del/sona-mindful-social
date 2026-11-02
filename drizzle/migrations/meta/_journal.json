@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793638070769,
+      "tag": "0000_sona_profiles_and_care",
+      "breakpoints": true
+    }
+  ]
+}

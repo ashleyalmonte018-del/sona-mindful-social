@@ -9,18 +9,24 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
+        default: "rounded-full bg-primary text-primary-foreground shadow hover:bg-primary/90",
+        destructive:
+          "rounded-full bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
-          "border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+          "rounded-full border border-input bg-card/60 hover:bg-secondary hover:text-secondary-foreground",
+        secondary: "rounded-full bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost: "rounded-full hover:bg-secondary hover:text-secondary-foreground",
         link: "text-primary underline-offset-4 hover:underline",
+        pill: "rounded-full border-[1.5px] border-foreground/80 bg-card/40 font-display font-normal uppercase tracking-wide text-foreground hover:bg-card hover:shadow-soft",
+        ink: "rounded-full bg-ink text-ink-foreground hover:bg-ink/85",
+        lime: "rounded-full bg-lime text-lime-foreground hover:bg-lime/85",
+        soft: "rounded-full border border-border bg-card/70 text-muted-foreground hover:bg-card hover:text-foreground",
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-10 rounded-md px-8",
+        sm: "h-8 px-3 text-xs",
+        lg: "h-11 px-8",
+        xl: "h-20 px-12 text-2xl md:h-24 md:text-4xl",
         icon: "h-9 w-9",
       },
     },
