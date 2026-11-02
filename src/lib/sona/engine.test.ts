@@ -1,0 +1,111 @@
+import { describe, expect, it } from "vitest";
+
+import {
+  applyDiversificationCap,
+  buildEdition,
+  dailyLimit,
+  effectiveCurate,
+  effectiveDials,
+  guardVerdict,
+  judgePost,
+  type FeedPrefs,
+} from "./engine";
+import { POSTS } from "./posts";
+import { DEFAULT_SETTINGS, type Post } from "./types";
+
+const base: FeedPrefs = {
+  curate: { ...DEFAULT_SETTINGS.curate },
+  guard: "balanced",
+  vibe: { ...DEFAULT_SETTINGS.vibe },
+  ageMode: "bloom",
+  care: [],
+};
+
+const post = (over: Partial<Post>): Post => ({
+  id: "x", author: "a", handle: "a", category: "inspiration", topics: [], subgenre: "s",
+  intensity: 0, triggers: [], vibes: {}, worthIt: 0.5, volatility: 0, text: "", hoursAgo: 0, ...over,
+});
+
+describe("finite edition size", () => {
+  it("is 8 for Sprout, 12 for Bloom, 15 for Open", () => {
+    expect(dailyLimit("sprout")).toBe(8);
+    expect(dailyLimit("bloom")).toBe(12);
+    expect(dailyLimit("open")).toBe(15);
+  });
+
+  it("never returns more visible posts than the limit", () => {
+    const e = buildEdition(POSTS, base);
+    expect(e.posts.length).toBe(12);
+    expect(e.posts.every((p) => p.verdict !== "hold")).toBe(true);
+  });
+});
+
+describe("guard levels", () => {
+  it("gentle softens only intensity 3", () => {
+    expect(guardVerdict(2, "gentle")).toBe("show");
+    expect(guardVerdict(3, "gentle")).toBe("soften");
+  });
+  it("balanced softens 2 and holds 3", () => {
+    expect(guardVerdict(2, "balanced")).toBe("soften");
+    expect(guardVerdict(3, "balanced")).toBe("hold");
+  });
+  it("strict softens 1 and holds 2+", () => {
+    expect(guardVerdict(1, "strict")).toBe("soften");
+    expect(guardVerdict(2, "strict")).toBe("hold");
+  });
+});
+
+describe("care profile topic floors", () => {
+  it("eating disorder locks Body & looks to hold even if the user picks let in", () => {
+    const c = effectiveCurate({ ...base.curate, body: "show", food: "show" }, "bloom", ["eating"]);
+    expect(c.body).toBe("hold");
+    expect(c.food).toBe("soften");
+  });
+
+  it("anxiety locks News to hold and caps the World dial at 20", () => {
+    const c = effectiveCurate({ ...base.curate, news: "show" }, "bloom", ["anxiety"]);
+    expect(c.news).toBe("hold");
+    expect(effectiveDials({ ...base.vibe, world: 100 }, ["anxiety"]).world).toBe(20);
+  });
+
+  it("holds a post carrying a condition trigger regardless of guard", () => {
+    const j = judgePost(post({ triggers: ["calorie-talk"] }), { ...base, guard: "gentle", care: ["eating"] });
+    expect(j.verdict).toBe("hold");
+    expect(j.careFlag).toBe(true);
+  });
+});
+
+describe("sprout mode", () => {
+  it("hard-blocks drama even when the user sets it to let in", () => {
+    const c = effectiveCurate({ ...base.curate, drama: "show" }, "sprout", []);
+    expect(c.drama).toBe("hold");
+  });
+  it("removes reels from the edition", () => {
+    const e = buildEdition(POSTS, { ...base, ageMode: "sprout" });
+    expect(e.posts.some((p) => p.post.category === "reels")).toBe(false);
+  });
+});
+
+describe("diversification cap", () => {
+  it("pushes a third same-tag item back 5 spaces", () => {
+    const items = ["a", "a", "a", "b", "c", "d", "e", "f", "g"];
+    const out = applyDiversificationCap(items, (x) => x);
+    expect(out).toEqual(["a", "a", "b", "c", "d", "e", "f", "a", "g"]);
+  });
+  it("never leaves 3 identical subgenres in a row in the edition", () => {
+    const e = buildEdition(POSTS, { ...base, vibe: { ...base.vibe, laughs: 100 } });
+    const subs = e.posts.map((p) => p.post.subgenre);
+    for (let i = 2; i < subs.length; i++) {
+      expect(subs[i] === subs[i - 1] && subs[i] === subs[i - 2]).toBe(false);
+    }
+  });
+});
+
+describe("cool-down filter", () => {
+  it("ranks a fast-trending post below an identical calm one", () => {
+    const calm = judgePost(post({ volatility: 0.1 }), base);
+    const hot = judgePost(post({ volatility: 0.95 }), base);
+    expect(hot.coolDown).toBe(true);
+    expect(hot.score).toBeLessThan(calm.score);
+  });
+});
