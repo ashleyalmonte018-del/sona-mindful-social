@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/care'
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
@@ -32,6 +33,11 @@ const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedCareRoute = AuthenticatedCareRouteImport.update({
+  id: '/care',
+  path: '/care',
+  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCircleRoute = AuthenticatedCircleRouteImport.update({
   id: '/circle',
@@ -67,6 +73,7 @@ const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/care': typeof AuthenticatedCareRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -77,6 +84,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/care': typeof AuthenticatedCareRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -89,6 +97,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/care': typeof AuthenticatedCareRoute
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/curate': typeof AuthenticatedCurateRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
@@ -101,6 +110,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/care'
     | '/circle'
     | '/curate'
     | '/feed'
@@ -111,6 +121,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/care'
     | '/circle'
     | '/curate'
     | '/feed'
@@ -122,6 +133,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/care'
     | '/_authenticated/circle'
     | '/_authenticated/curate'
     | '/_authenticated/feed'
@@ -158,6 +170,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/care': {
+      id: '/_authenticated/care'
+      path: '/care'
+      fullPath: '/care'
+      preLoaderRoute: typeof AuthenticatedCareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/circle': {
       id: '/_authenticated/circle'
@@ -205,6 +224,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCareRoute: typeof AuthenticatedCareRoute
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
@@ -214,6 +234,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCareRoute: AuthenticatedCareRoute,
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedCurateRoute: AuthenticatedCurateRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
