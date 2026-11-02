@@ -19,6 +19,7 @@ import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/f
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
+import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -69,6 +70,11 @@ const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
   path: '/vibe',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
+  id: '/zone',
+  path: '/zone',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +86,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/vibe': typeof AuthenticatedVibeRoute
+  '/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +98,7 @@ export interface FileRoutesByTo {
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/vibe': typeof AuthenticatedVibeRoute
+  '/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +112,7 @@ export interface FileRoutesById {
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
+  '/_authenticated/zone': typeof AuthenticatedZoneRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +126,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/vibe'
+    | '/zone'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +138,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/vibe'
+    | '/zone'
   id:
     | '__root__'
     | '/'
@@ -140,6 +151,7 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/_authenticated/vibe'
+    | '/_authenticated/zone'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -220,6 +232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedVibeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/zone': {
+      id: '/_authenticated/zone'
+      path: '/zone'
+      fullPath: '/zone'
+      preLoaderRoute: typeof AuthenticatedZoneRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -231,6 +250,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
+  AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -241,6 +261,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedVibeRoute: AuthenticatedVibeRoute,
+  AuthenticatedZoneRoute: AuthenticatedZoneRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
