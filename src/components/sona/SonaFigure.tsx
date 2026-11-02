@@ -114,11 +114,11 @@ interface BodyDims {
 }
 
 const BODY: Record<BodyType, BodyDims> = {
-  classic: { headR: 16, top: 52, bottom: 98, sw: 12, hw: 12.5, limb: 8.5, arm: 1, leg: 1, bulge: 0 },
-  slim: { headR: 15.5, top: 52, bottom: 98, sw: 10, hw: 9.5, limb: 7, arm: 1, leg: 1, bulge: 0 },
-  round: { headR: 16.5, top: 53, bottom: 98, sw: 14, hw: 18, limb: 9.5, arm: 0.95, leg: 0.95, bulge: 5 },
-  tall: { headR: 15, top: 46, bottom: 100, sw: 11, hw: 11, limb: 7.5, arm: 1.1, leg: 1.1, bulge: 0 },
-  petite: { headR: 18, top: 58, bottom: 96, sw: 11, hw: 12, limb: 8.5, arm: 0.85, leg: 0.82, bulge: 1 },
+  classic: { headR: 16.5, top: 52, bottom: 97, sw: 13.5, hw: 13, limb: 9.5, arm: 1, leg: 1, bulge: 0 },
+  slim: { headR: 15.5, top: 52, bottom: 98, sw: 10.5, hw: 10, limb: 7.5, arm: 1, leg: 1, bulge: 0 },
+  round: { headR: 17, top: 53, bottom: 98, sw: 15, hw: 19, limb: 10.5, arm: 0.95, leg: 0.95, bulge: 5 },
+  tall: { headR: 15.5, top: 46, bottom: 100, sw: 12, hw: 11.5, limb: 8.5, arm: 1.1, leg: 1.1, bulge: 0 },
+  petite: { headR: 18.5, top: 58, bottom: 96, sw: 12.5, hw: 13, limb: 9.5, arm: 0.85, leg: 0.82, bulge: 1 },
 };
 
 /** Shared viewBox — the doodle canvas maps to exactly this box. */
@@ -311,28 +311,28 @@ export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, styl
     switch (pose.prop) {
       case "book":
         return (
-          <g transform={`translate(${mid[0]} ${mid[1] - 1}) rotate(-8)`}>
+          <g transform={`translate(${mid[0]} ${mid[1] - 1}) rotate(-8) scale(1.3)`}>
             <rect x={-12} y={-9} width={24} height={17} rx={1.8} fill="var(--prop-purple)" stroke={LINE} strokeWidth={1.2} />
             <path d="M 0 -9 L 0 8" stroke={LINE} strokeWidth={1} opacity={0.6} />
           </g>
         );
       case "box":
         return (
-          <g transform={`translate(${mid[0]} ${mid[1] - 4})`}>
+          <g transform={`translate(${mid[0]} ${mid[1] - 4}) scale(1.3)`}>
             <rect x={-15} y={-11} width={30} height={22} rx={1.5} fill="var(--prop-brown)" stroke={LINE} strokeWidth={1.2} />
             <path d="M -15 -5 L 15 -5 M -3 -11 L -3 -5 M 3 -11 L 3 -5" stroke={LINE} strokeWidth={0.9} opacity={0.55} />
           </g>
         );
       case "envelope":
         return (
-          <g transform={`translate(${mid[0] - 2} ${mid[1] - 2}) rotate(-14)`}>
+          <g transform={`translate(${mid[0] - 2} ${mid[1] - 2}) rotate(-14) scale(1.3)`}>
             <rect x={-14} y={-9} width={28} height={18} rx={1.5} fill="var(--prop-orange)" stroke={LINE} strokeWidth={1.2} />
             <path d="M -14 -9 L 0 2 L 14 -9" fill="none" stroke={LINE} strokeWidth={1} opacity={0.7} />
           </g>
         );
       case "megaphone":
         return (
-          <g transform={`translate(${aL[2][0] - 2} ${aL[2][1] - 2}) rotate(-12)`}>
+          <g transform={`translate(${aL[2][0] - 2} ${aL[2][1] - 2}) rotate(-12) scale(1.35)`}>
             <path d="M 2 -4 L -18 -11 L -18 9 L 2 4 Z" fill="var(--prop-orange)" stroke={LINE} strokeWidth={1.2} strokeLinejoin="round" />
             <rect x={1} y={-4.5} width={6} height={9} rx={1.5} fill="var(--prop-orange)" stroke={LINE} strokeWidth={1.2} />
           </g>
@@ -340,7 +340,7 @@ export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, styl
       case "heart":
         return (
           <path
-            transform={`translate(${mid[0]} ${mid[1] - 3})`}
+            transform={`translate(${mid[0]} ${mid[1] - 3}) scale(1.4)`}
             d="M 0 6 C -10 -1 -8 -9 -3 -9 C -1 -9 0 -7 0 -6 C 0 -7 1 -9 3 -9 C 8 -9 10 -1 0 6 Z"
             fill="var(--prop-red)"
             stroke={LINE}
