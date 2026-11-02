@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
+import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +30,58 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedCurateRoute = AuthenticatedCurateRouteImport.update({
+  id: '/curate',
+  path: '/curate',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
   id: '/feed',
   path: '/feed',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
+  id: '/vibe',
+  path: '/vibe',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/vibe': typeof AuthenticatedVibeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/vibe': typeof AuthenticatedVibeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/curate': typeof AuthenticatedCurateRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
+  '/_authenticated/vibe': typeof AuthenticatedVibeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/feed'
+  fullPaths: '/' | '/auth' | '/curate' | '/feed' | '/vibe'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/feed'
-  id: '__root__' | '/' | '/_authenticated' | '/auth' | '/_authenticated/feed'
+  to: '/' | '/auth' | '/curate' | '/feed' | '/vibe'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/_authenticated/curate'
+    | '/_authenticated/feed'
+    | '/_authenticated/vibe'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +113,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/curate': {
+      id: '/_authenticated/curate'
+      path: '/curate'
+      fullPath: '/curate'
+      preLoaderRoute: typeof AuthenticatedCurateRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/feed': {
       id: '/_authenticated/feed'
       path: '/feed'
@@ -95,15 +127,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/vibe': {
+      id: '/_authenticated/vibe'
+      path: '/vibe'
+      fullPath: '/vibe'
+      preLoaderRoute: typeof AuthenticatedVibeRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
+  AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedCurateRoute: AuthenticatedCurateRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
+  AuthenticatedVibeRoute: AuthenticatedVibeRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
