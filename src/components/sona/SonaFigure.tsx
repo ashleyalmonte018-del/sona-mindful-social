@@ -121,6 +121,9 @@ const BODY: Record<BodyType, BodyDims> = {
   petite: { headR: 18, top: 58, bottom: 96, sw: 11, hw: 12, limb: 8.5, arm: 0.85, leg: 0.82, bulge: 1 },
 };
 
+/** Shared viewBox — the doodle canvas maps to exactly this box. */
+export const FIGURE_BOX = { x: 0, y: -14, w: 120, h: 178 };
+
 const O = 1.9; // outline thickness
 const LINE = "var(--sona-line)";
 
@@ -377,11 +380,9 @@ export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, styl
     }
   })();
 
-  const vbTop = look.hairStyle === "afro" ? -12 : -4;
-
   return (
     <svg
-      viewBox={`0 ${vbTop} 120 ${164 - vbTop}`}
+      viewBox={`${FIGURE_BOX.x} ${FIGURE_BOX.y} ${FIGURE_BOX.w} ${FIGURE_BOX.h}`}
       className={cn("block overflow-visible", className)}
       style={style}
       role="img"
@@ -555,5 +556,3 @@ export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, styl
   );
 }
 
-/** The viewBox the doodle canvas maps to (must match SonaFigure without afro). */
-export const FIGURE_BOX = { x: 0, y: -4, w: 120, h: 168 };
