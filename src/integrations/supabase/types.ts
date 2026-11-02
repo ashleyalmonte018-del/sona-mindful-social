@@ -14,7 +14,102 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      journal_entries: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          original: string | null
+          rating: number | null
+          reframe: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          original?: string | null
+          rating?: number | null
+          reframe?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          original?: string | null
+          rating?: number | null
+          reframe?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mood_checkins: {
+        Row: {
+          created_at: string
+          id: string
+          mood: string
+          note: string | null
+          source: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          mood: string
+          note?: string | null
+          source?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          mood?: string
+          note?: string | null
+          source?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          age_mode: string
+          care_profile: string[]
+          created_at: string
+          display_name: string
+          doodle: string | null
+          handle: string | null
+          id: string
+          settings: Json
+          sona: Json
+          updated_at: string
+        }
+        Insert: {
+          age_mode?: string
+          care_profile?: string[]
+          created_at?: string
+          display_name?: string
+          doodle?: string | null
+          handle?: string | null
+          id: string
+          settings?: Json
+          sona?: Json
+          updated_at?: string
+        }
+        Update: {
+          age_mode?: string
+          care_profile?: string[]
+          created_at?: string
+          display_name?: string
+          doodle?: string | null
+          handle?: string | null
+          id?: string
+          settings?: Json
+          sona?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
