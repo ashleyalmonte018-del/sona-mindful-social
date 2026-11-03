@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "overrides": {
-    "rolldown": "1.2.1"
+    "rolldown": "~1.1.5"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -76,8 +76,6 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.26.5",
-    "@testing-library/jest-dom": "^6.6.0",
-    "@testing-library/react": "^16.0.0",
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
@@ -90,7 +88,6 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
-    "jsdom": "^20.0.3",
     "nitro": "3.0.260603-beta",
     "postgres": "^4.0.0",
     "prettier": "^3.7.3",
