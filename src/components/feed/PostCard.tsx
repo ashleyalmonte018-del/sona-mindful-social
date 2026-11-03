@@ -1,10 +1,13 @@
-import { Eye, Play, Snowflake, Sprout } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { Eye, Play, ScanText, Snowflake, Sparkles, Sprout } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { WhyDialog } from "@/components/feed/WhyDialog";
 import type { Judged } from "@/lib/sona/engine";
+import { summarizePost } from "@/lib/sona/summary.functions";
 import { CATEGORIES } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
@@ -21,13 +24,16 @@ export function PostCard({
   onSeen,
   rating,
   onRate,
+  aiLabels = true,
 }: {
   judged: Judged;
   onSeen: (id: string) => void;
   rating?: 1 | -1 | undefined;
   onRate: (v: 1 | -1) => void;
+  aiLabels?: boolean | undefined;
 }) {
   const { post, verdict } = judged;
+  const [labelState, setLabelState] = useState<"summary" | "open" | "skipped">(verdict === "label" ? "summary" : "open");
   const ref = useRef<HTMLElement>(null);
   const [revealed, setRevealed] = useState(verdict !== "soften");
   const [why, setWhy] = useState(false);
@@ -67,8 +73,36 @@ export function PostCard({
             <Snowflake className="size-3" /> cooling down
           </span>
         )}
+        {aiLabels && post.ai && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-prop-purple/15 px-2.5 py-1 text-xs text-prop-purple">
+            <Sparkles className="size-3" /> {post.ai === "generated" ? "AI-generated" : "Edited photo"}
+          </span>
+        )}
         <span className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground">{cat?.label}</span>
       </header>
+
+      {labelState === "summary" ? (
+        <LabelSummary
+          judged={judged}
+          onView={() => setLabelState("open")}
+          onMeh={() => {
+            onRate(-1);
+            setLabelState("skipped");
+          }}
+          onWorth={() => {
+            onRate(1);
+            setLabelState("open");
+          }}
+        />
+      ) : labelState === "skipped" ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          Skipped — marked meh.{" "}
+          <button className="underline underline-offset-4" onClick={() => setLabelState("summary")}>
+            Undo
+          </button>
+        </p>
+      ) : (
+      <>
 
       <div className="relative mt-4">
         <div className={cn("transition", !revealed && "pointer-events-none select-none blur-lg")} aria-hidden={!revealed}>
@@ -100,6 +134,9 @@ export function PostCard({
         </p>
       )}
 
+      </>
+      )}
+
       <footer className="mt-5 flex flex-wrap items-center gap-2 border-t border-border pt-4">
         <span className="mr-1 text-xs text-muted-foreground">Worth your time?</span>
         <Button size="sm" variant={rating === 1 ? "ink" : "soft"} onClick={() => onRate(1)} aria-pressed={rating === 1}>
@@ -114,6 +151,44 @@ export function PostCard({
       </footer>
       <WhyDialog judged={judged} open={why} onOpenChange={setWhy} />
     </article>
+  );
+}
+
+function LabelSummary({ judged, onView, onMeh, onWorth }: { judged: Judged; onView: () => void; onMeh: () => void; onWorth: () => void }) {
+  const summarize = useServerFn(summarizePost);
+  const q = useQuery({
+    queryKey: ["summary", judged.post.id],
+    queryFn: () => summarize({ data: { text: judged.post.text, flags: judged.flags } }),
+    staleTime: Infinity,
+    retry: false,
+  });
+  return (
+    <div className="mt-4 rounded-2xl border border-dashed border-border bg-secondary/60 p-5">
+      <p className="eyebrow flex items-center gap-1.5 text-muted-foreground">
+        <ScanText className="size-3.5" /> Label only · summary first
+      </p>
+      {q.isLoading ? (
+        <div className="mt-3 space-y-2" aria-label="Writing a summary">
+          <div className="h-3 w-11/12 animate-pulse rounded-full bg-border" />
+          <div className="h-3 w-2/3 animate-pulse rounded-full bg-border" />
+        </div>
+      ) : (
+        <p className="mt-2 text-base">
+          {q.data?.summary ?? `A post about ${judged.flags.join(", ").toLowerCase() || judged.post.subgenre.replace(/-/g, " ")}.`}
+        </p>
+      )}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <Button size="sm" variant="ink" onClick={onView}>
+          <Eye /> View post
+        </Button>
+        <Button size="sm" variant="soft" onClick={onWorth}>
+          Worth it
+        </Button>
+        <Button size="sm" variant="soft" onClick={onMeh}>
+          Meh — skip
+        </Button>
+      </div>
+    </div>
   );
 }
 

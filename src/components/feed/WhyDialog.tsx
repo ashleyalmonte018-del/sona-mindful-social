@@ -16,11 +16,13 @@ const KIND_LABEL: Record<ReasonKind, string> = {
   sunk: "Care ranking",
   diversity: "Variety cap",
   quality: "Time well spent",
+  ai: "AI content",
+  boost: "Your topics & hashtags",
 };
 
 export function WhyDialog({ judged, open, onOpenChange }: { judged: Judged; open: boolean; onOpenChange: (o: boolean) => void }) {
   const verdict =
-    judged.verdict === "hold" ? "Held back" : judged.verdict === "soften" ? "Softened" : "Let through";
+    judged.verdict === "hold" ? "Held back" : judged.verdict === "soften" ? "Softened" : judged.verdict === "label" ? "Label only" : "Let through";
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="rounded-3xl sm:max-w-lg">

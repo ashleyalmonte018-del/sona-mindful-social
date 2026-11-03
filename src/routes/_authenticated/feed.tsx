@@ -75,8 +75,10 @@ function Feed() {
       ageMode: profile.ageMode,
       care: profile.care,
       ratings,
+      boosts: profile.settings.boosts,
+      blockAI: profile.settings.blockAI,
     }),
-    [profile.settings.curate, profile.settings.guard, profile.settings.vibe, profile.ageMode, profile.care, ratings],
+    [profile.settings.curate, profile.settings.guard, profile.settings.vibe, profile.ageMode, profile.care, ratings, profile.settings.boosts, profile.settings.blockAI],
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const edition = useMemo(() => buildEdition(POSTS, prefs), [prefs, edKey]);
@@ -129,7 +131,7 @@ function Feed() {
             {profile.displayName}
           </h1>
           <p className="subline mt-3 text-lg">
-            {edition.limit} posts, then you're free. {edition.held.length} held back, {edition.softened} softened.
+            {edition.limit} posts, then you're free. {edition.held.length} held back, {edition.softened} softened, {edition.labeled} label-only.
           </p>
         </div>
 
@@ -204,7 +206,7 @@ function Feed() {
               ))}
               {tabPosts.map(({ p, i }) => (
                 <div key={p.post.id} className="space-y-4">
-                  <PostCard judged={p} onSeen={onSeen} rating={rated[p.post.id]} onRate={(v) => rate(p, v)} />
+                  <PostCard judged={p} onSeen={onSeen} rating={rated[p.post.id]} onRate={(v) => rate(p, v)} aiLabels={profile.settings.aiLabels} />
                   {tabHeld
                     .filter((h) => h.after === i)
                     .map((h) => (
