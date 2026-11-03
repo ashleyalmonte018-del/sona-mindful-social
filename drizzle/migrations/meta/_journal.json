@@ -8,6 +8,13 @@
       "when": 1793638070769,
       "tag": "0000_sona_profiles_and_care",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793664231419,
+      "tag": "0001_sona_posts_usage_family",
+      "breakpoints": true
     }
   ]
 }
