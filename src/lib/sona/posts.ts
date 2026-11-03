@@ -26,7 +26,7 @@ export const POSTS: Post[] = [
     scene: { pose: "box", tone: "orange" }, offline: "Try the lassi with someone at home", hoursAgo: 5,
   },
   {
-    id: "p5", author: "glowwithkai", handle: "glowwithkai", category: "inspiration", topics: ["body", "fitness"], subgenre: "transformation",
+    id: "p5", ai: "edited", author: "glowwithkai", handle: "glowwithkai", category: "inspiration", topics: ["body", "fitness"], subgenre: "transformation",
     intensity: 2, triggers: ["before-after", "body-check", "comparison"], vibes: { movement: 0.5 }, worthIt: 0.34, volatility: 0.7,
     text: "30-day before/after 😳 you won't believe what I stopped eating", hoursAgo: 4,
   },
@@ -72,7 +72,7 @@ export const POSTS: Post[] = [
     text: "How a local budget vote actually works, in plain words. No yelling, promise.", hoursAgo: 5,
   },
   {
-    id: "p14", author: "Hustle Hari", handle: "hustlehari", category: "inspiration", topics: ["hustle"], subgenre: "flex",
+    id: "p14", ai: "generated", author: "Hustle Hari", handle: "hustlehari", category: "inspiration", topics: ["hustle"], subgenre: "flex",
     intensity: 1, triggers: ["comparison"], vibes: { world: 0.2 }, worthIt: 0.29, volatility: 0.55,
     text: "17 and made $40k this month. If you're sleeping 8 hours you're losing 😤", hoursAgo: 3,
   },
@@ -116,7 +116,7 @@ export const POSTS: Post[] = [
     offline: "Water a plant (or go find one)", hoursAgo: 10,
   },
   {
-    id: "p22", author: "Strobe Studio", handle: "strobe", category: "reels", topics: [], subgenre: "chaos-edit",
+    id: "p22", ai: "generated", author: "Strobe Studio", handle: "strobe", category: "reels", topics: [], subgenre: "chaos-edit",
     intensity: 2, triggers: ["flashing", "rapid-cuts", "sensory-overload", "loud"], vibes: { laughs: 0.5 }, worthIt: 0.3, volatility: 0.75,
     text: "⚡ 200 cuts in 15 seconds ⚡ (bass boosted)", hoursAgo: 1,
   },
@@ -136,7 +136,7 @@ export const POSTS: Post[] = [
     text: "A calm explainer on the storm recovery — what happened, what helps, how to donate.", hoursAgo: 6,
   },
   {
-    id: "p26", author: "Glow Lab", handle: "glowlab", category: "inspiration", topics: ["body"], subgenre: "glow-up",
+    id: "p26", ai: "edited", author: "Glow Lab", handle: "glowlab", category: "inspiration", topics: ["body"], subgenre: "glow-up",
     intensity: 1, triggers: ["comparison", "body-check"], vibes: { creative: 0.3 }, worthIt: 0.42, volatility: 0.5,
     text: "Rating every face shape from 1–10 (be honest in the comments)", hoursAgo: 2,
   },
@@ -157,7 +157,7 @@ export const POSTS: Post[] = [
     text: "If you're not scared yet, you're not paying attention.", hoursAgo: 1,
   },
   {
-    id: "p30", author: "Sketch Sam", handle: "sketchsam", category: "reels", topics: [], subgenre: "art-process",
+    id: "p30", ai: "edited", author: "Sketch Sam", handle: "sketchsam", category: "reels", topics: [], subgenre: "art-process",
     intensity: 0, triggers: [], vibes: { creative: 1, calm: 0.6 }, worthIt: 0.9, volatility: 0.1,
     text: "Timelapse: one line drawing, no lifting the pen ✍️", scene: { pose: "megaphone", tone: "purple" }, hoursAgo: 4,
   },
@@ -174,7 +174,7 @@ export const POSTS: Post[] = [
     offline: "Do the 4-minute stretch", hoursAgo: 5,
   },
   {
-    id: "p33", author: "Meme Dept", handle: "memedept", category: "inspiration", topics: [], subgenre: "memes",
+    id: "p33", ai: "generated", author: "Meme Dept", handle: "memedept", category: "inspiration", topics: [], subgenre: "memes",
     intensity: 0, triggers: [], vibes: { laughs: 1 }, worthIt: 0.8, volatility: 0.35,
     text: "me explaining to my cat why I need 9 tabs open 🐱", hoursAgo: 2,
   },
