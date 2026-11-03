@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { HeartHandshake, Music2 } from "lucide-react";
+import { Globe, HeartHandshake, Lock, Music2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { AppShell } from "@/components/shell/AppShell";
