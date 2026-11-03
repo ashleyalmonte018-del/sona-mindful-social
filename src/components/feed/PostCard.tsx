@@ -8,6 +8,7 @@ import { SonaFigure } from "@/components/sona/SonaFigure";
 import { WhyDialog } from "@/components/feed/WhyDialog";
 import type { Judged } from "@/lib/sona/engine";
 import { summarizePost } from "@/lib/sona/summary.functions";
+import { addCategorySeconds } from "@/lib/sona/usage";
 import { CATEGORIES } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
@@ -41,17 +42,25 @@ export function PostCard({
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    let since: number | null = null;
+    const flush = () => {
+      if (since !== null) addCategorySeconds(post.category, (Date.now() - since) / 1000);
+      since = null;
+    };
     const io = new IntersectionObserver(
       ([e]) => {
         if (e?.isIntersecting) {
           onSeen(post.id);
-          io.disconnect();
-        }
+          since = Date.now();
+        } else flush();
       },
       { threshold: 0.6 },
     );
     io.observe(el);
-    return () => io.disconnect();
+    return () => {
+      flush();
+      io.disconnect();
+    };
   }, [post.id, onSeen]);
 
   const cat = CATEGORIES.find((c) => c.id === post.category);

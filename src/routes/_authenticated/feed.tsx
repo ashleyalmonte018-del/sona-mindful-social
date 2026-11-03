@@ -16,7 +16,7 @@ import { useMoods } from "@/hooks/use-sona-profile";
 import { buildEdition, categoriesFor, type FeedPrefs, type Judged } from "@/lib/sona/engine";
 import { POSTS } from "@/lib/sona/posts";
 import { CATEGORIES, moodColor, moodLabel, type PostCategory } from "@/lib/sona/types";
-import { editionKey, editionName, nextEditionLabel, readRatings, readSeen, writeRatings, writeSeen } from "@/lib/sona/usage";
+import { noteHiddenCount, editionKey, editionName, nextEditionLabel, readRatings, readSeen, writeRatings, writeSeen } from "@/lib/sona/usage";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/feed")({
@@ -82,6 +82,7 @@ function Feed() {
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const edition = useMemo(() => buildEdition(POSTS, prefs), [prefs, edKey]);
+  useEffect(() => noteHiddenCount(edition.held.length), [edition.held.length]);
   const cats = categoriesFor(profile.ageMode);
   const activeTab = cats.includes(tab) ? tab : cats[0];
 
