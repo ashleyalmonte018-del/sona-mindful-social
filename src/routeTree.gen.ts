@@ -16,6 +16,7 @@ import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
+import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
@@ -56,6 +57,11 @@ const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
+  id: '/parent',
+  path: '/parent',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedProfileRoute = AuthenticatedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -89,6 +95,7 @@ export interface FileRoutesByFullPath {
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
@@ -102,6 +109,7 @@ export interface FileRoutesByTo {
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
@@ -117,6 +125,7 @@ export interface FileRoutesById {
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/curate': typeof AuthenticatedCurateRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
+  '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/circle'
     | '/curate'
     | '/feed'
+    | '/parent'
     | '/profile'
     | '/settings'
     | '/studio'
@@ -145,6 +155,7 @@ export interface FileRouteTypes {
     | '/circle'
     | '/curate'
     | '/feed'
+    | '/parent'
     | '/profile'
     | '/settings'
     | '/studio'
@@ -159,6 +170,7 @@ export interface FileRouteTypes {
     | '/_authenticated/circle'
     | '/_authenticated/curate'
     | '/_authenticated/feed'
+    | '/_authenticated/parent'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/_authenticated/studio'
@@ -223,6 +235,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/parent': {
+      id: '/_authenticated/parent'
+      path: '/parent'
+      fullPath: '/parent'
+      preLoaderRoute: typeof AuthenticatedParentRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/profile': {
       id: '/_authenticated/profile'
       path: '/profile'
@@ -266,6 +285,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
+  AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
@@ -278,6 +298,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedCurateRoute: AuthenticatedCurateRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
+  AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
