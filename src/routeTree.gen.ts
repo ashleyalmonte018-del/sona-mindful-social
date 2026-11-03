@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AuthenticatedAccountabilityRouteImport } from './routes/_authenticated/accountability'
 import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/care'
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
@@ -37,6 +38,12 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAccountabilityRoute =
+  AuthenticatedAccountabilityRouteImport.update({
+    id: '/accountability',
+    path: '/accountability',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCareRoute = AuthenticatedCareRouteImport.update({
   id: '/care',
   path: '/care',
@@ -91,6 +98,7 @@ const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/accountability': typeof AuthenticatedAccountabilityRoute
   '/care': typeof AuthenticatedCareRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
@@ -105,6 +113,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/accountability': typeof AuthenticatedAccountabilityRoute
   '/care': typeof AuthenticatedCareRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
@@ -121,6 +130,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/_authenticated/accountability': typeof AuthenticatedAccountabilityRoute
   '/_authenticated/care': typeof AuthenticatedCareRoute
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/curate': typeof AuthenticatedCurateRoute
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/accountability'
     | '/care'
     | '/circle'
     | '/curate'
@@ -151,6 +162,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/accountability'
     | '/care'
     | '/circle'
     | '/curate'
@@ -166,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/_authenticated/accountability'
     | '/_authenticated/care'
     | '/_authenticated/circle'
     | '/_authenticated/curate'
@@ -206,6 +219,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/accountability': {
+      id: '/_authenticated/accountability'
+      path: '/accountability'
+      fullPath: '/accountability'
+      preLoaderRoute: typeof AuthenticatedAccountabilityRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/care': {
       id: '/_authenticated/care'
@@ -281,6 +301,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAccountabilityRoute: typeof AuthenticatedAccountabilityRoute
   AuthenticatedCareRoute: typeof AuthenticatedCareRoute
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
@@ -294,6 +315,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAccountabilityRoute: AuthenticatedAccountabilityRoute,
   AuthenticatedCareRoute: AuthenticatedCareRoute,
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedCurateRoute: AuthenticatedCurateRoute,
