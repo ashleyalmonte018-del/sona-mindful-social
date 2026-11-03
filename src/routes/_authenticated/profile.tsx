@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Globe, HeartHandshake, Lock, Music2, Plus, Sparkles } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { HeartHandshake, Music2 } from "lucide-react";
@@ -51,9 +50,8 @@ function useMyPosts(userId?: string) {
 
 
 function Profile() {
-  const { profile } = useSona();
+  const { profile, update } = useSona();
   const { moods } = useMoods();
-  const { entries } = useJournal();
   const myPosts = useMyPosts(profile.id);
   const { entries } = useJournal();
 
