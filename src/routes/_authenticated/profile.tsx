@@ -118,7 +118,6 @@ function Profile() {
               <Link to="/settings">Settings</Link>
             </Button>
           </div>
-        </div>
       </section>
 
       <div className="space-y-6">
