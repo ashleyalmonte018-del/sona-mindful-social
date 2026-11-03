@@ -149,21 +149,21 @@ function torsoPath(b: BodyDims) {
 }
 
 export interface SonaFigureProps {
-  look?: Partial<SonaLook>;
-  pose?: string;
-  doodle?: DoodleStroke[];
-  className?: string;
-  style?: CSSProperties;
-  title?: string;
+  look?: Partial<SonaLook> | undefined;
+  pose?: string | undefined;
+  doodle?: DoodleStroke[] | undefined;
+  className?: string | undefined;
+  style?: CSSProperties | undefined;
+  title?: string | undefined;
   /** Hide the grey ground shadow. */
-  noShadow?: boolean;
+  noShadow?: boolean | undefined;
 }
 
 export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, style, title, noShadow }: SonaFigureProps) {
   const uid = useId().replace(/:/g, "");
   const look = { ...DEFAULT_LOOK, ...lookIn };
   const b = BODY[look.bodyType] ?? BODY.classic;
-  const pose = POSES[poseIn ?? look.pose] ?? POSES.wave;
+  const pose: PoseDef = POSES[poseIn ?? look.pose] ?? POSES["wave"]!;
   const skin = look.skin;
 
   const cx = 60;
@@ -543,7 +543,7 @@ export function SonaFigure({ look: lookIn, pose: poseIn, doodle, className, styl
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {doodle.map((s, i) => {
             const pts: string[] = [];
-            for (let k = 0; k < s.points.length; k += 2) pts.push(`${s.points[k].toFixed(1)},${s.points[k + 1].toFixed(1)}`);
+            for (let k = 0; k < s.points.length; k += 2) pts.push(`${s.points[k]!.toFixed(1)},${s.points[k + 1]!.toFixed(1)}`);
             return pts.length === 1 ? (
               <circle key={i} cx={s.points[0]} cy={s.points[1]} r={s.size / 2} fill={s.color} />
             ) : (

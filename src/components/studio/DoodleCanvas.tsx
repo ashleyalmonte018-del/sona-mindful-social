@@ -49,13 +49,13 @@ export function DoodleCanvas({
       ctx.lineWidth = st.size;
       if (st.points.length === 2) {
         ctx.beginPath();
-        ctx.arc(st.points[0], st.points[1], st.size / 2, 0, Math.PI * 2);
+        ctx.arc(st.points[0]!, st.points[1]!, st.size / 2, 0, Math.PI * 2);
         ctx.fill();
         continue;
       }
       ctx.beginPath();
-      ctx.moveTo(st.points[0], st.points[1]);
-      for (let i = 2; i < st.points.length; i += 2) ctx.lineTo(st.points[i], st.points[i + 1]);
+      ctx.moveTo(st.points[0]!, st.points[1]!);
+      for (let i = 2; i < st.points.length; i += 2) ctx.lineTo(st.points[i]!, st.points[i + 1]!);
       ctx.stroke();
     }
   }, [strokes]);
@@ -90,8 +90,8 @@ export function DoodleCanvas({
         if (!current.current) return;
         const [x, y] = pt(e);
         const p = current.current.points;
-        const lx = p[p.length - 2];
-        const ly = p[p.length - 1];
+        const lx = p[p.length - 2]!;
+        const ly = p[p.length - 1]!;
         if (Math.hypot(x - lx, y - ly) < 0.8) return;
         p.push(x, y);
         draw();

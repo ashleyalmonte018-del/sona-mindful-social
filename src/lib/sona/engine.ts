@@ -22,10 +22,26 @@ export interface FeedPrefs {
   ageMode: AgeMode;
   care: CareCondition[];
   /** Net "worth it" ratings per subgenre (+1 worth it, -1 meh). */
-  ratings?: Record<string, number>;
+  ratings?: Record<string, number> | undefined;
+  /** Topics / hashtags the user asked to see more of. */
+  boosts?: string[] | undefined;
+  /** Hold back every AI-generated post. */
+  blockAI?: boolean | undefined;
 }
 
-export type ReasonKind = "topic" | "guard" | "care" | "age" | "cooldown" | "vibe" | "rating" | "sunk" | "diversity" | "quality";
+export type ReasonKind = "topic" | "guard" | "care" | "age" | "cooldown" | "vibe" | "rating" | "sunk" | "diversity" | "quality" | "ai" | "boost";
+
+const FILTER_WORD: Record<Filter, string> = { show: "let in", label: "label only", soften: "soften", hold: "hold back" };
+
+/** "#Study Tips" -> "study tips" */
+export function normalizeTag(t: string) {
+  return t.replace(/^#+/, "").trim().toLowerCase().replace(/\s+/g, " ").slice(0, 30);
+}
+
+export function boostMatches(post: Post, boosts: string[]): string[] {
+  const hay = `${post.text} ${post.subgenre.replace(/-/g, " ")} ${post.topics.join(" ")} ${post.category}`.toLowerCase();
+  return boosts.map(normalizeTag).filter((b) => b.length > 1 && hay.includes(b));
+}
 export interface Reason {
   kind: ReasonKind;
   text: string;
@@ -167,7 +183,7 @@ export function judgePost(post: Post, prefs: FeedPrefs): Judged {
       const fromFloor = FILTER_RANK[floors[t].floor] >= FILTER_RANK[f] && floors[t].floor !== "show";
       reasons.push({
         kind: fromFloor ? (floors[t].sources.includes("Sprout mode") ? "age" : "care") : "topic",
-        text: `${topicLabel(t)} is set to ${f === "hold" ? "hold back" : "soften"}${fromFloor ? ` (locked by ${floors[t].sources.join(", ")})` : ""}.`,
+        text: `${topicLabel(t)} is set to ${FILTER_WORD[f]}${fromFloor ? ` (locked by ${floors[t].sources.join(", ")})` : ""}.`,
       });
       if (fromFloor && !floors[t].sources.every((s) => s === "Sprout mode")) careFlag = true;
       flags.push(topicLabel(t));
@@ -185,6 +201,13 @@ export function judgePost(post: Post, prefs: FeedPrefs): Judged {
       flags.push(trig.replace(/-/g, " "));
       reasons.push({ kind: "care", text: `Contains "${trig.replace(/-/g, " ")}", a known trigger for ${src}. Always held back.` });
     }
+  }
+
+  // 2b. AI-generated content ban
+  if (prefs.blockAI && post.ai === "generated") {
+    verdict = "hold";
+    flags.push("AI-generated");
+    reasons.push({ kind: "ai", text: "Made with AI — you turned off all AI-generated content." });
   }
 
   // 3. Guard level (Sprout forces strict)
@@ -226,6 +249,12 @@ export function judgePost(post: Post, prefs: FeedPrefs): Judged {
     }
   }
 
+  const hits = boostMatches(post, prefs.boosts ?? []);
+  if (hits.length) {
+    score += Math.min(2, hits.length) * 18;
+    reasons.push({ kind: "boost", text: `You asked for more ${hits.map((h) => `#${h.replace(/ /g, "")}`).join(", ")}.` });
+  }
+
   const r = prefs.ratings?.[post.subgenre] ?? 0;
   if (r !== 0) {
     const clamped = Math.max(-3, Math.min(3, r));
@@ -254,11 +283,11 @@ export function applyDiversificationCap<T>(
   const out = [...items];
   let guard = 0;
   for (let i = maxRun; i < out.length && guard < out.length * 10; i++) {
-    const k = key(out[i]);
+    const k = key(out[i]!);
     let run = true;
-    for (let j = 1; j <= maxRun; j++) if (key(out[i - j]) !== k) run = false;
+    for (let j = 1; j <= maxRun; j++) if (key(out[i - j]!) !== k) run = false;
     if (!run) continue;
-    const [moved] = out.splice(i, 1);
+    const moved = out.splice(i, 1)[0]!;
     const target = Math.min(i + pushBack, out.length);
     if (target === i) {
       out.splice(i, 0, moved); // nothing after it to swap with
@@ -281,6 +310,7 @@ export interface Edition {
   held: { judged: Judged; after: number }[];
   limit: number;
   softened: number;
+  labeled: number;
 }
 
 export function buildEdition(pool: Post[], prefs: FeedPrefs): Edition {
@@ -304,14 +334,20 @@ export function buildEdition(pool: Post[], prefs: FeedPrefs): Edition {
     if (above <= posts.length) held.push({ judged: j, after: above - 1 });
   });
 
-  return { posts, held, limit, softened: posts.filter((p) => p.verdict === "soften").length };
+  return {
+    posts,
+    held,
+    limit,
+    softened: posts.filter((p) => p.verdict === "soften").length,
+    labeled: posts.filter((p) => p.verdict === "label").length,
+  };
 }
 
 /** Live counts for a guard level, used by the Curate screen. */
 export function guardCounts(pool: Post[], prefs: FeedPrefs, guard: GuardLevel) {
   const j = pool.map((p) => judgePost(p, { ...prefs, guard }));
   return {
-    shown: j.filter((x) => x.verdict === "show").length,
+    shown: j.filter((x) => x.verdict === "show" || x.verdict === "label").length,
     softened: j.filter((x) => x.verdict === "soften").length,
     held: j.filter((x) => x.verdict === "hold").length,
   };

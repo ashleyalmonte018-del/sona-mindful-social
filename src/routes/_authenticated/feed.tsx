@@ -16,7 +16,7 @@ import { useMoods } from "@/hooks/use-sona-profile";
 import { buildEdition, categoriesFor, type FeedPrefs, type Judged } from "@/lib/sona/engine";
 import { POSTS } from "@/lib/sona/posts";
 import { CATEGORIES, moodColor, moodLabel, type PostCategory } from "@/lib/sona/types";
-import { editionKey, editionName, nextEditionLabel, readRatings, readSeen, writeRatings, writeSeen } from "@/lib/sona/usage";
+import { noteHiddenCount, editionKey, editionName, nextEditionLabel, readRatings, readSeen, writeRatings, writeSeen } from "@/lib/sona/usage";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/feed")({
@@ -58,7 +58,7 @@ function Feed() {
   const [edKey, setEdKey] = useState("");
   const [shown, setShown] = useState<string[]>([]);
   const [refresh, setRefresh] = useState<"idle" | "breathing" | "reflect">("idle");
-  const [reflection] = useState(() => REFLECTIONS[Math.floor(Math.random() * REFLECTIONS.length)]);
+  const [reflection] = useState(() => REFLECTIONS[Math.floor(Math.random() * REFLECTIONS.length)]!);
 
   useEffect(() => {
     setSeen(readSeen());
@@ -75,11 +75,14 @@ function Feed() {
       ageMode: profile.ageMode,
       care: profile.care,
       ratings,
+      boosts: profile.settings.boosts,
+      blockAI: profile.settings.blockAI,
     }),
-    [profile.settings.curate, profile.settings.guard, profile.settings.vibe, profile.ageMode, profile.care, ratings],
+    [profile.settings.curate, profile.settings.guard, profile.settings.vibe, profile.ageMode, profile.care, ratings, profile.settings.boosts, profile.settings.blockAI],
   );
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const edition = useMemo(() => buildEdition(POSTS, prefs), [prefs, edKey]);
+  useEffect(() => noteHiddenCount(edition.held.length), [edition.held.length]);
   const cats = categoriesFor(profile.ageMode);
   const activeTab = cats.includes(tab) ? tab : cats[0];
 
@@ -101,9 +104,8 @@ function Feed() {
     setRated(nextRated);
     localStorage.setItem("sona.rated", JSON.stringify(nextRated));
     const nr = { ...ratings, [j.post.subgenre]: (ratings[j.post.subgenre] ?? 0) + delta };
-    writeRatings(nr);
     // Ratings shape the *next* edition; keep this one stable.
-    localStorage.setItem("sona.ratings", JSON.stringify(nr));
+    writeRatings(nr);
   }
 
   const editionIds = edition.posts.map((p) => p.post.id);
@@ -130,7 +132,7 @@ function Feed() {
             {profile.displayName}
           </h1>
           <p className="subline mt-3 text-lg">
-            {edition.limit} posts, then you're free. {edition.held.length} held back, {edition.softened} softened.
+            {edition.limit} posts, then you're free. {edition.held.length} held back, {edition.softened} softened, {edition.labeled} label-only.
           </p>
         </div>
 
@@ -205,7 +207,7 @@ function Feed() {
               ))}
               {tabPosts.map(({ p, i }) => (
                 <div key={p.post.id} className="space-y-4">
-                  <PostCard judged={p} onSeen={onSeen} rating={rated[p.post.id]} onRate={(v) => rate(p, v)} />
+                  <PostCard judged={p} onSeen={onSeen} rating={rated[p.post.id]} onRate={(v) => rate(p, v)} aiLabels={profile.settings.aiLabels} />
                   {tabHeld
                     .filter((h) => h.after === i)
                     .map((h) => (

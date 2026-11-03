@@ -3,7 +3,7 @@ import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import type { Json, TablesUpdate } from "@/integrations/supabase/types";
 import {
   mergeLook,
   mergeSettings,
@@ -26,6 +26,9 @@ export interface SonaProfile {
   settings: SonaSettings;
   look: SonaLook;
   doodle: DoodleStroke[];
+  bio: string;
+  isPublic: boolean;
+  passcodeHash: string | null;
 }
 
 const PROFILE_KEY = ["profile"] as const;
@@ -37,7 +40,7 @@ async function fetchProfile(): Promise<SonaProfile> {
   let { data: row, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
   if (error) throw error;
   if (!row) {
-    const name = (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "friend";
+    const name = (user.user_metadata?.["display_name"] as string) || user.email?.split("@")[0] || "friend";
     const ins = await supabase.from("profiles").insert({ id: user.id, display_name: name }).select("*").single();
     if (ins.error) throw ins.error;
     row = ins.data;
@@ -52,15 +55,18 @@ async function fetchProfile(): Promise<SonaProfile> {
     settings: mergeSettings(row.settings),
     look: mergeLook(row.sona),
     doodle: parseDoodle(row.doodle),
+    bio: row.bio ?? "",
+    isPublic: row.is_public,
+    passcodeHash: row.parent_passcode_hash,
   };
 }
 
-type Patch = Partial<Pick<SonaProfile, "displayName" | "handle" | "ageMode" | "care" | "look" | "doodle">> & {
+type Patch = Partial<Pick<SonaProfile, "displayName" | "handle" | "ageMode" | "care" | "look" | "doodle" | "bio" | "isPublic" | "passcodeHash">> & {
   settings?: Partial<SonaSettings>;
 };
 
 function toRow(p: SonaProfile, patch: Patch) {
-  const row: Record<string, unknown> = {};
+  const row: TablesUpdate<"profiles"> = {};
   if (patch.displayName !== undefined) row.display_name = patch.displayName;
   if (patch.handle !== undefined) row.handle = patch.handle;
   if (patch.ageMode !== undefined) row.age_mode = patch.ageMode;
@@ -68,6 +74,9 @@ function toRow(p: SonaProfile, patch: Patch) {
   if (patch.settings !== undefined) row.settings = p.settings as unknown as Json;
   if (patch.look !== undefined) row.sona = p.look as unknown as Json;
   if (patch.doodle !== undefined) row.doodle = JSON.stringify(p.doodle);
+  if (patch.bio !== undefined) row.bio = patch.bio;
+  if (patch.isPublic !== undefined) row.is_public = patch.isPublic;
+  if (patch.passcodeHash !== undefined) row.parent_passcode_hash = patch.passcodeHash;
   return row;
 }
 
@@ -104,11 +113,9 @@ export function useSonaProfile() {
       const current = qc.getQueryData<SonaProfile>(PROFILE_KEY);
       if (!current) return Promise.resolve();
       qc.setQueryData(PROFILE_KEY, applyPatch(current, patch));
-      pending.current = {
-        ...pending.current,
-        ...patch,
-        settings: patch.settings || pending.current.settings ? { ...pending.current.settings, ...patch.settings } : undefined,
-      };
+      const merged: Patch = { ...pending.current, ...patch };
+      if (patch.settings || pending.current.settings) merged.settings = { ...pending.current.settings, ...patch.settings };
+      pending.current = merged;
       if (timer.current) clearTimeout(timer.current);
       if (opts?.immediate) return flush();
       timer.current = setTimeout(flush, 450);
@@ -197,4 +204,38 @@ export function useJournal() {
     onError: (e: Error) => toast.error("Couldn't save that", { description: e.message }),
   });
   return { ...query, entries: query.data ?? [], add };
+}
+
+// ---------- Usage days ----------
+
+export interface UsageDay {
+  day: string;
+  seconds: number;
+  hidden_count: number;
+  category_seconds: Record<string, number>;
+}
+
+export function useUsageDays(days = 31) {
+  return useQuery({
+    queryKey: ["usage", days],
+    queryFn: async () => {
+      const since = new Date(Date.now() - days * 86400000).toISOString().slice(0, 10);
+      const { data, error } = await supabase
+        .from("usage_days")
+        .select("day,seconds,hidden_count,category_seconds")
+        .gte("day", since)
+        .order("day", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as unknown as UsageDay[];
+    },
+  });
+}
+
+// ---------- Parent passcode ----------
+
+export async function hashPasscode(userId: string, code: string) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`sona:${userId}:${code}`));
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }

@@ -30,9 +30,9 @@ export function Dial({
   value: number;
   onChange: (v: number) => void;
   color: string;
-  cap?: number;
-  capLabel?: string;
-  className?: string;
+  cap?: number | undefined;
+  capLabel?: string | undefined;
+  className?: string | undefined;
 }) {
   const ref = useRef<SVGSVGElement>(null);
   const max = cap ?? 100;

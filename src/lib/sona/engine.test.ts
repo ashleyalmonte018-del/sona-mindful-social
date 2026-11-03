@@ -109,3 +109,33 @@ describe("cool-down filter", () => {
     expect(hot.score).toBeLessThan(calm.score);
   });
 });
+
+describe("label only", () => {
+  it("a topic set to label only gives a label verdict (summary first), not hidden", () => {
+    const j = judgePost(post({ topics: ["romance"] }), { ...base, curate: { ...base.curate, romance: "label" } });
+    expect(j.verdict).toBe("label");
+  });
+  it("care floors still override label only", () => {
+    const c = effectiveCurate({ ...base.curate, body: "label" }, "bloom", ["eating"]);
+    expect(c.body).toBe("hold");
+  });
+});
+
+describe("AI content", () => {
+  it("bans AI-generated posts when the ban is on", () => {
+    expect(judgePost(post({ ai: "generated" }), { ...base, blockAI: true }).verdict).toBe("hold");
+    expect(judgePost(post({ ai: "generated" }), base).verdict).toBe("show");
+  });
+  it("does not ban edited photos, only AI-generated ones", () => {
+    expect(judgePost(post({ ai: "edited" }), { ...base, blockAI: true }).verdict).toBe("show");
+  });
+});
+
+describe("custom topics and hashtags", () => {
+  it("boosts a post matching a #hashtag the user typed", () => {
+    const p = post({ text: "Easy banana bread for beginners" });
+    const plain = judgePost(p, base);
+    const boosted = judgePost(p, { ...base, boosts: ["#Banana Bread"] });
+    expect(boosted.score).toBeGreaterThan(plain.score);
+  });
+});

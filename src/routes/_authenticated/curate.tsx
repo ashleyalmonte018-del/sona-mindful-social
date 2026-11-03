@@ -65,7 +65,7 @@ function Curate() {
         )}
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {GUARD_LEVELS.map((g) => {
-            const c = counts[g.id];
+            const c = counts[g.id]!;
             const active = guard === g.id;
             const disabled = profile.ageMode === "sprout" && g.id !== "strict";
             return (
@@ -100,7 +100,7 @@ function Curate() {
 
       <section className="mt-12">
         <h2 className="heading-calm text-3xl">Topics</h2>
-        <p className="subline">Let in, soften (blurred until you tap), or hold back (a quiet line).</p>
+        <p className="subline">Let in, label only (a short summary first, then you decide), soften (blurred until you tap), or hold back (a quiet line).</p>
         <ul className="mt-4 grid gap-3 md:grid-cols-2">
           {TOPICS.map((t) => {
             const floor = floors[t.id];
@@ -127,7 +127,7 @@ function Curate() {
                     </span>
                   )}
                 </div>
-                <div role="radiogroup" aria-label={t.label} className="mt-4 grid grid-cols-3 gap-1 rounded-full bg-secondary p-1">
+                <div role="radiogroup" aria-label={t.label} className="mt-4 grid grid-cols-4 gap-1 rounded-full bg-secondary p-1">
                   {FILTERS.map((f) => {
                     const disabled = FILTER_RANK[f.id] < FILTER_RANK[floor.floor];
                     const on = value === f.id;
@@ -139,7 +139,7 @@ function Curate() {
                         disabled={disabled}
                         onClick={() => setTopic(t.id, f.id)}
                         className={cn(
-                          "rounded-full px-2 py-1.5 text-sm transition disabled:cursor-not-allowed disabled:opacity-35",
+                          "rounded-full px-1 py-1.5 text-xs transition sm:text-sm disabled:cursor-not-allowed disabled:opacity-35",
                           on ? "bg-card text-foreground shadow-soft" : "text-muted-foreground hover:text-foreground",
                         )}
                       >

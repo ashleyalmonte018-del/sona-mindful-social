@@ -12,10 +12,11 @@ export const TOPICS = [
 ] as const;
 export type TopicId = (typeof TOPICS)[number]["id"];
 
-export type Filter = "show" | "soften" | "hold";
-export const FILTER_RANK: Record<Filter, number> = { show: 0, soften: 1, hold: 2 };
+export type Filter = "show" | "label" | "soften" | "hold";
+export const FILTER_RANK: Record<Filter, number> = { show: 0, label: 1, soften: 2, hold: 3 };
 export const FILTERS: { id: Filter; label: string }[] = [
   { id: "show", label: "Let in" },
+  { id: "label", label: "Label only" },
   { id: "soften", label: "Soften" },
   { id: "hold", label: "Hold back" },
 ];
@@ -132,6 +133,8 @@ export interface Post {
   scene?: { pose: string; tone: "lime" | "orange" | "purple" | "sky" | "sand" };
   offline?: string;
   hoursAgo: number;
+  /** Content made with AI or a retouched/edited photo. */
+  ai?: "generated" | "edited";
 }
 
 // ---------- Sona character ----------
@@ -213,6 +216,12 @@ export interface SonaSettings {
   quietMode: boolean;
   checkIns: boolean;
   share: { song: string; artist: string; mood: MoodId };
+  /** Topics or hashtags the user wants more of. */
+  boosts: string[];
+  aiLabels: boolean;
+  blockAI: boolean;
+  accountability: boolean;
+  timeLimit: number;
 }
 
 export const DEFAULT_SETTINGS: SonaSettings = {
@@ -233,6 +242,11 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   quietMode: false,
   checkIns: true,
   share: { song: "Pink + White", artist: "Frank Ocean", mood: "calm" },
+  boosts: [],
+  aiLabels: true,
+  blockAI: false,
+  accountability: false,
+  timeLimit: 45,
 };
 
 export function mergeSettings(raw: unknown): SonaSettings {

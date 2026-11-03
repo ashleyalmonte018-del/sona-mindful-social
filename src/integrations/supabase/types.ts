@@ -74,39 +74,114 @@ export type Database = {
       profiles: {
         Row: {
           age_mode: string
+          bio: string | null
           care_profile: string[]
           created_at: string
           display_name: string
           doodle: string | null
           handle: string | null
           id: string
+          is_public: boolean
+          parent_passcode_hash: string | null
           settings: Json
           sona: Json
           updated_at: string
         }
         Insert: {
           age_mode?: string
+          bio?: string | null
           care_profile?: string[]
           created_at?: string
           display_name?: string
           doodle?: string | null
           handle?: string | null
           id: string
+          is_public?: boolean
+          parent_passcode_hash?: string | null
           settings?: Json
           sona?: Json
           updated_at?: string
         }
         Update: {
           age_mode?: string
+          bio?: string | null
           care_profile?: string[]
           created_at?: string
           display_name?: string
           doodle?: string | null
           handle?: string | null
           id?: string
+          is_public?: boolean
+          parent_passcode_hash?: string | null
           settings?: Json
           sona?: Json
           updated_at?: string
+        }
+        Relationships: []
+      }
+      usage_days: {
+        Row: {
+          category_seconds: Json
+          day: string
+          hidden_count: number
+          id: string
+          seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category_seconds?: Json
+          day: string
+          hidden_count?: number
+          id?: string
+          seconds?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category_seconds?: Json
+          day?: string
+          hidden_count?: number
+          id?: string
+          seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_posts: {
+        Row: {
+          body: string
+          category: string
+          created_at: string
+          disclosures: Json
+          id: string
+          image_path: string | null
+          labels: Json
+          topics: string[]
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          category?: string
+          created_at?: string
+          disclosures?: Json
+          id?: string
+          image_path?: string | null
+          labels?: Json
+          topics?: string[]
+          user_id: string
+        }
+        Update: {
+          body?: string
+          category?: string
+          created_at?: string
+          disclosures?: Json
+          id?: string
+          image_path?: string | null
+          labels?: Json
+          topics?: string[]
+          user_id?: string
         }
         Relationships: []
       }
@@ -115,7 +190,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_public_profile: { Args: { _uid: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

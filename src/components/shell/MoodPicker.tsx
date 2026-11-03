@@ -10,7 +10,7 @@ export function MoodPicker({
   onPick,
   size = "md",
 }: {
-  value?: string;
+  value?: string | undefined;
   onPick: (m: MoodId) => void;
   size?: "sm" | "md";
 }) {

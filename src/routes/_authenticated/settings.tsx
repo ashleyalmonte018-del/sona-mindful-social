@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Check, HeartHandshake } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Check, HeartHandshake, ShieldCheck } from "lucide-react";
+import { toast } from "sonner";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,8 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
+import { PasscodeDialog } from "@/components/family/PasscodeDialog";
+import { hashPasscode } from "@/hooks/use-sona-profile";
 import { CARE_RULES, CRISIS_LINKS } from "@/lib/sona/care";
-import { AGE_MODES, type CareCondition } from "@/lib/sona/types";
+import { AGE_MODES, type AgeMode, type CareCondition } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -36,6 +39,27 @@ function Settings() {
   const [name, setName] = useState(profile.displayName);
   const [handle, setHandle] = useState(profile.handle ?? "");
   const s = profile.settings;
+  const [pending, setPending] = useState<AgeMode | null>(null);
+  const [code, setCode] = useState("");
+  const [changingCode, setChangingCode] = useState(false);
+  const locked = profile.ageMode === "sprout" && !!profile.passcodeHash;
+
+  function pickAge(m: AgeMode) {
+    if (m === profile.ageMode) return;
+    if (locked) setPending(m);
+    else update({ ageMode: m }, { immediate: true });
+  }
+
+  async function savePasscode() {
+    if (!/^\d{4,8}$/.test(code)) {
+      toast.error("Use 4 to 8 digits");
+      return;
+    }
+    await update({ passcodeHash: await hashPasscode(profile.id, code) }, { immediate: true });
+    setCode("");
+    setChangingCode(false);
+    toast.success("Parent passcode saved");
+  }
 
   function toggleCare(c: CareCondition) {
     const next = profile.care.includes(c) ? profile.care.filter((x) => x !== c) : [...profile.care, c];
@@ -79,7 +103,7 @@ function Settings() {
               return (
                 <button
                   key={m.id}
-                  onClick={() => update({ ageMode: m.id }, { immediate: true })}
+                  onClick={() => pickAge(m.id)}
                   aria-pressed={on}
                   className={cn(
                     "relative rounded-[1.75rem] border p-5 text-left transition",
@@ -151,6 +175,61 @@ function Settings() {
           </div>
         </section>
 
+        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-soft">
+          <h2 className="heading-calm text-3xl">Content</h2>
+          <p className="subline text-sm">How Sona treats AI-made and edited posts.</p>
+          <div className="mt-2 divide-y divide-border">
+            <Row id="ai-labels" label="Tag AI-generated & edited content" hint="Show a small tag on posts made with AI or with retouched photos" checked={s.aiLabels} onChange={(v) => update({ settings: { aiLabels: v } })} />
+            <Row id="ai-block" label="Turn off all AI-generated content" hint="Hold back every post that was made with AI" checked={s.blockAI} onChange={(v) => update({ settings: { blockAI: v } })} />
+            <Row id="acct" label="Accountability page" hint="Time limits, your month of check-ins and what you spend the most time on" checked={s.accountability} onChange={(v) => update({ settings: { accountability: v } })} />
+          </div>
+          {s.accountability && (
+            <Button asChild variant="pill" size="sm" className="mt-2">
+              <Link to="/accountability">Open Accountability</Link>
+            </Button>
+          )}
+        </section>
+
+        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-soft">
+          <h2 className="heading-calm flex items-center gap-3 text-3xl">
+            Family Center <ShieldCheck className="size-6 text-care" />
+          </h2>
+          {profile.ageMode !== "sprout" ? (
+            <p className="subline mt-1 text-sm">Family Center is for Sprout accounts (under 13). Switch to Sprout to link a parent.</p>
+          ) : (
+            <>
+              <p className="subline mt-1 max-w-2xl text-sm">
+                A parent sets a passcode to open Parent View: a protection check, weekly time and how many posts were hidden. Parents never see posts, messages or searches.
+              </p>
+              {!profile.passcodeHash || changingCode ? (
+                <div className="mt-4 flex max-w-sm gap-2">
+                  <Input
+                    type="password"
+                    inputMode="numeric"
+                    aria-label="New parent passcode"
+                    placeholder="4–8 digits"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                    className="rounded-full"
+                  />
+                  <Button variant="ink" onClick={savePasscode}>
+                    Set passcode
+                  </Button>
+                </div>
+              ) : (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <Button asChild variant="ink">
+                    <Link to="/parent">Open Parent View</Link>
+                  </Button>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-care-soft px-3 py-1.5 text-sm text-care">
+                    <Check className="size-4" /> Parent linked · age mode locked
+                  </span>
+                </div>
+              )}
+            </>
+          )}
+        </section>
+
         <section className="rounded-[2rem] bg-care-soft p-6">
           <h2 className="heading-calm text-2xl text-care">If you need someone now</h2>
           <p className="mt-1 text-sm text-muted-foreground">In an immediate emergency, go to the nearest emergency room or call 911.</p>
@@ -166,6 +245,16 @@ function Settings() {
           </ul>
         </section>
       </div>
+      <PasscodeDialog
+        open={pending !== null}
+        onOpenChange={(o) => !o && setPending(null)}
+        title="Leaving Sprout"
+        description="A parent needs to enter the Family Center passcode to change the age mode."
+        onVerified={() => {
+          if (pending) update({ ageMode: pending }, { immediate: true });
+          setPending(null);
+        }}
+      />
     </>
   );
 }

@@ -46,7 +46,7 @@ interface Buddy {
   name: string;
   look: SonaLook;
   pose: string;
-  emote?: string;
+  emote?: string | undefined;
   x: number;
   mine?: boolean;
 }
@@ -62,7 +62,7 @@ function Zone() {
 
   useEffect(() => {
     const me: Buddy = { id: "me", name: profile.look.name || "You", look: profile.look, pose: "wave", x: 46, mine: true };
-    const others = visitors.map((f, i) => ({ id: f.id, name: f.name, look: f.look, pose: f.look.pose, x: [14, 72, 30, 86][i % 4] }));
+    const others = visitors.map((f, i) => ({ id: f.id, name: f.name, look: f.look, pose: f.look.pose, x: [14, 72, 30, 86][i % 4] ?? 50 }));
     setBuddies([me, ...others]);
     if (!allow) setOpponent("practice");
   }, [profile.look, visitors, allow]);
@@ -191,7 +191,7 @@ function Zone() {
               onClick={() => setGame(g)}
               className="group relative overflow-hidden rounded-[2rem] border border-border bg-doodle-paper p-6 text-left shadow-soft transition hover:-translate-y-1 hover:shadow-float"
             >
-              <SonaFigure pose={["think", "cheer", "jump", "box"][i]} className="absolute -bottom-3 -right-2 w-20 opacity-90 transition group-hover:scale-105" noShadow />
+              <SonaFigure pose={["think", "cheer", "jump", "box"][i] ?? "wave"} className="absolute -bottom-3 -right-2 w-20 opacity-90 transition group-hover:scale-105" noShadow />
               <DoodleTitle text={g.title} className="text-3xl leading-tight" />
               <p className="mt-2 max-w-[60%] text-sm text-muted-foreground">{g.blurb}</p>
             </button>

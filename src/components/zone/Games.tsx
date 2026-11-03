@@ -21,23 +21,9 @@ import {
 import type { SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
-const DOODLE = ["text-doodle-blue", "text-doodle-red", "text-doodle-yellow", "text-doodle-blue", "text-doodle-green", "text-doodle-red"];
-
-export function DoodleTitle({ text, className }: { text: string; className?: string }) {
-  let k = 0;
-  return (
-    <span className={cn("font-doodle font-semibold tracking-tight", className)} aria-label={text}>
-      {text.split("").map((ch, i) =>
-        ch === " " ? (
-          <span key={i}> </span>
-        ) : (
-          <span key={i} aria-hidden className={DOODLE[k++ % DOODLE.length]}>
-            {ch}
-          </span>
-        ),
-      )}
-    </span>
-  );
+/** Game titles use the site's calm uppercase heading style. */
+export function DoodleTitle({ text, className }: { text: string; className?: string | undefined }) {
+  return <span className={cn("heading-calm text-foreground", className)}>{text}</span>;
 }
 
 export interface Players {
@@ -163,7 +149,7 @@ export function RockPaperScissors({ players }: { players: Players }) {
     setRound(null);
     window.setTimeout(() => {
       const opts: RPS[] = ["rock", "paper", "scissors"];
-      const them = opts[Math.floor(Math.random() * 3)];
+      const them = opts[Math.floor(Math.random() * 3)]!;
       const r = rpsResult(me, them);
       setRound({ me, them, r });
       setScore((s) => ({ a: s.a + (r === "win" ? 1 : 0), b: s.b + (r === "lose" ? 1 : 0) }));
@@ -304,7 +290,7 @@ export function DotsAndBoxes({ players }: { players: Players }) {
           const y1 = PAD + l.r * SP;
           const x2 = l.kind === "h" ? x1 + SP : x1;
           const y2 = l.kind === "h" ? y1 : y1 + SP;
-          const owner = l.kind === "h" ? s.h[l.r][l.c] : s.v[l.r][l.c];
+          const owner = (l.kind === "h" ? s.h[l.r]![l.c] : s.v[l.r]![l.c]) ?? 0;
           return (
             <g key={`${l.kind}${l.r}${l.c}`} onClick={() => click(l)} className={cn(!owner && s.turn === 1 && "cursor-pointer [&:hover>line:last-child]:stroke-foreground/25")}>
               <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="transparent" strokeWidth={16} />
