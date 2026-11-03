@@ -53,8 +53,6 @@ function Vibe() {
     update({ settings: { ...profile.settings, boosts: boosts.filter((b) => b !== tag) } });
   };
 
-  return (
-    <>
 
   return (
     <>
