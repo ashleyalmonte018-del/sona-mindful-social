@@ -21,23 +21,9 @@ import {
 import type { SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
-const DOODLE = ["text-doodle-blue", "text-doodle-red", "text-doodle-yellow", "text-doodle-blue", "text-doodle-green", "text-doodle-red"];
-
-export function DoodleTitle({ text, className }: { text: string; className?: string }) {
-  let k = 0;
-  return (
-    <span className={cn("font-doodle font-semibold tracking-tight", className)} aria-label={text}>
-      {text.split("").map((ch, i) =>
-        ch === " " ? (
-          <span key={i}> </span>
-        ) : (
-          <span key={i} aria-hidden className={DOODLE[k++ % DOODLE.length]}>
-            {ch}
-          </span>
-        ),
-      )}
-    </span>
-  );
+/** Game titles use the site's calm uppercase heading style. */
+export function DoodleTitle({ text, className }: { text: string; className?: string | undefined }) {
+  return <span className={cn("heading-calm text-foreground", className)}>{text}</span>;
 }
 
 export interface Players {
