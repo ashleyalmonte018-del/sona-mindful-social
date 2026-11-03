@@ -58,7 +58,7 @@ function Feed() {
   const [edKey, setEdKey] = useState("");
   const [shown, setShown] = useState<string[]>([]);
   const [refresh, setRefresh] = useState<"idle" | "breathing" | "reflect">("idle");
-  const [reflection] = useState(() => REFLECTIONS[Math.floor(Math.random() * REFLECTIONS.length)]);
+  const [reflection] = useState(() => REFLECTIONS[Math.floor(Math.random() * REFLECTIONS.length)]!);
 
   useEffect(() => {
     setSeen(readSeen());
@@ -101,9 +101,8 @@ function Feed() {
     setRated(nextRated);
     localStorage.setItem("sona.rated", JSON.stringify(nextRated));
     const nr = { ...ratings, [j.post.subgenre]: (ratings[j.post.subgenre] ?? 0) + delta };
-    writeRatings(nr);
     // Ratings shape the *next* edition; keep this one stable.
-    localStorage.setItem("sona.ratings", JSON.stringify(nr));
+    writeRatings(nr);
   }
 
   const editionIds = edition.posts.map((p) => p.post.id);

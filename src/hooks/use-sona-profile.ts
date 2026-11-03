@@ -3,7 +3,7 @@ import { useCallback, useRef } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
+import type { Json, TablesUpdate } from "@/integrations/supabase/types";
 import {
   mergeLook,
   mergeSettings,
@@ -37,7 +37,7 @@ async function fetchProfile(): Promise<SonaProfile> {
   let { data: row, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
   if (error) throw error;
   if (!row) {
-    const name = (user.user_metadata?.display_name as string) || user.email?.split("@")[0] || "friend";
+    const name = (user.user_metadata?.["display_name"] as string) || user.email?.split("@")[0] || "friend";
     const ins = await supabase.from("profiles").insert({ id: user.id, display_name: name }).select("*").single();
     if (ins.error) throw ins.error;
     row = ins.data;
@@ -60,7 +60,7 @@ type Patch = Partial<Pick<SonaProfile, "displayName" | "handle" | "ageMode" | "c
 };
 
 function toRow(p: SonaProfile, patch: Patch) {
-  const row: Record<string, unknown> = {};
+  const row: TablesUpdate<"profiles"> = {};
   if (patch.displayName !== undefined) row.display_name = patch.displayName;
   if (patch.handle !== undefined) row.handle = patch.handle;
   if (patch.ageMode !== undefined) row.age_mode = patch.ageMode;
@@ -104,11 +104,9 @@ export function useSonaProfile() {
       const current = qc.getQueryData<SonaProfile>(PROFILE_KEY);
       if (!current) return Promise.resolve();
       qc.setQueryData(PROFILE_KEY, applyPatch(current, patch));
-      pending.current = {
-        ...pending.current,
-        ...patch,
-        settings: patch.settings || pending.current.settings ? { ...pending.current.settings, ...patch.settings } : undefined,
-      };
+      const merged: Patch = { ...pending.current, ...patch };
+      if (patch.settings || pending.current.settings) merged.settings = { ...pending.current.settings, ...patch.settings };
+      pending.current = merged;
       if (timer.current) clearTimeout(timer.current);
       if (opts?.immediate) return flush();
       timer.current = setTimeout(flush, 450);

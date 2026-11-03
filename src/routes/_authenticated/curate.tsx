@@ -65,7 +65,7 @@ function Curate() {
         )}
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {GUARD_LEVELS.map((g) => {
-            const c = counts[g.id];
+            const c = counts[g.id]!;
             const active = guard === g.id;
             const disabled = profile.ageMode === "sprout" && g.id !== "strict";
             return (

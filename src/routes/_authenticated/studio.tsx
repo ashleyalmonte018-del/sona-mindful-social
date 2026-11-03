@@ -96,7 +96,7 @@ function Studio() {
   const [strokes, setStrokes] = useState<DoodleStroke[]>(profile.doodle);
   const [redo, setRedo] = useState<DoodleStroke[]>([]);
   const [tab, setTab] = useState("body");
-  const [ink, setInk] = useState(INKS[1]);
+  const [ink, setInk] = useState<string>(INKS[1]!);
   const [brush, setBrush] = useState(3);
   const [saving, setSaving] = useState(false);
 
@@ -279,13 +279,13 @@ function Studio() {
             </div>
           </Group>
           <Group title={`Brush size · ${brush}`}>
-            <Slider value={[brush]} min={1} max={10} step={0.5} onValueChange={([v]) => setBrush(v)} className="max-w-sm" aria-label="Brush size" />
+            <Slider value={[brush]} min={1} max={10} step={0.5} onValueChange={([v]) => setBrush(v ?? 3)} className="max-w-sm" aria-label="Brush size" />
           </Group>
           <div className="flex flex-wrap gap-2">
-            <Button variant="pill" size="sm" disabled={!strokes.length} onClick={() => { setRedo((r) => [strokes[strokes.length - 1], ...r]); setStrokes((s) => s.slice(0, -1)); }}>
+            <Button variant="pill" size="sm" disabled={!strokes.length} onClick={() => { setRedo((r) => [strokes[strokes.length - 1]!, ...r]); setStrokes((s) => s.slice(0, -1)); }}>
               <Undo2 /> Undo
             </Button>
-            <Button variant="pill" size="sm" disabled={!redo.length} onClick={() => { setStrokes((s) => [...s, redo[0]]); setRedo((r) => r.slice(1)); }}>
+            <Button variant="pill" size="sm" disabled={!redo.length} onClick={() => { setStrokes((s) => [...s, redo[0]!]); setRedo((r) => r.slice(1)); }}>
               <Redo2 /> Redo
             </Button>
             <Button variant="pill" size="sm" onClick={() => setInk(look.skin)}>

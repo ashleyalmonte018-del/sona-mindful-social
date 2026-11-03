@@ -254,11 +254,11 @@ export function applyDiversificationCap<T>(
   const out = [...items];
   let guard = 0;
   for (let i = maxRun; i < out.length && guard < out.length * 10; i++) {
-    const k = key(out[i]);
+    const k = key(out[i]!);
     let run = true;
-    for (let j = 1; j <= maxRun; j++) if (key(out[i - j]) !== k) run = false;
+    for (let j = 1; j <= maxRun; j++) if (key(out[i - j]!) !== k) run = false;
     if (!run) continue;
-    const [moved] = out.splice(i, 1);
+    const moved = out.splice(i, 1)[0]!;
     const target = Math.min(i + pushBack, out.length);
     if (target === i) {
       out.splice(i, 0, moved); // nothing after it to swap with

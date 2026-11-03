@@ -10,7 +10,7 @@ export const TTT_LINES = [
 
 export function tttWinner(b: Mark[]): { winner: "X" | "O" | "draw" | null; line?: number[] } {
   for (const l of TTT_LINES) {
-    const [a, c, d] = l;
+    const [a, c, d] = l as [number, number, number];
     if (b[a] && b[a] === b[c] && b[a] === b[d]) return { winner: b[a] as "X" | "O", line: l };
   }
   return b.every(Boolean) ? { winner: "draw" } : { winner: null };
@@ -35,8 +35,8 @@ function minimax(b: Mark[], turn: "X" | "O", me: "X" | "O"): number {
 export function tttBestMove(b: Mark[], me: "X" | "O", playful = 0, rand = Math.random): number {
   const empty = b.map((v, i) => (v ? -1 : i)).filter((i) => i >= 0);
   if (!empty.length) return -1;
-  if (playful > 0 && rand() < playful) return empty[Math.floor(rand() * empty.length)];
-  let best = empty[0];
+  if (playful > 0 && rand() < playful) return empty[Math.floor(rand() * empty.length)]!;
+  let best = empty[0]!;
   let bestScore = -Infinity;
   for (const i of empty) {
     const n = [...b];
@@ -89,7 +89,7 @@ export function newDots(rows = 3, cols = 3): DotsState {
 }
 
 function sides(s: DotsState, r: number, c: number) {
-  return [s.h[r][c], s.h[r + 1][c], s.v[r][c], s.v[r][c + 1]].filter(Boolean).length;
+  return [s.h[r]![c], s.h[r + 1]![c], s.v[r]![c], s.v[r]![c + 1]].filter(Boolean).length;
 }
 
 function adjacentBoxes(s: DotsState, line: DotsLine): [number, number][] {
@@ -105,7 +105,7 @@ function adjacentBoxes(s: DotsState, line: DotsLine): [number, number][] {
 }
 
 export function isTaken(s: DotsState, l: DotsLine) {
-  return (l.kind === "h" ? s.h[l.r][l.c] : s.v[l.r][l.c]) !== 0;
+  return (l.kind === "h" ? s.h[l.r]![l.c] : s.v[l.r]![l.c]) !== 0;
 }
 
 /** Draw a line. Completing a box scores it and grants another turn. */
@@ -117,12 +117,12 @@ export function playDots(s: DotsState, line: DotsLine): { state: DotsState; comp
     v: s.v.map((r) => [...r]),
     boxes: s.boxes.map((r) => [...r]),
   };
-  if (line.kind === "h") n.h[line.r][line.c] = s.turn;
-  else n.v[line.r][line.c] = s.turn;
+  if (line.kind === "h") n.h[line.r]![line.c] = s.turn;
+  else n.v[line.r]![line.c] = s.turn;
   let completed = 0;
   for (const [r, c] of adjacentBoxes(n, line)) {
-    if (n.boxes[r][c] === 0 && sides(n, r, c) === 4) {
-      n.boxes[r][c] = s.turn;
+    if (n.boxes[r]![c] === 0 && sides(n, r, c) === 4) {
+      n.boxes[r]![c] = s.turn;
       completed++;
     }
   }
@@ -152,5 +152,5 @@ export function dotsAiMove(s: DotsState, rand = Math.random): DotsLine | null {
   if (completes) return completes;
   const safe = free.filter((l) => adjacentBoxes(s, l).every(([r, c]) => sides(s, r, c) < 2));
   const pool = safe.length ? safe : free;
-  return pool[Math.floor(rand() * pool.length)];
+  return pool[Math.floor(rand() * pool.length)] ?? null;
 }

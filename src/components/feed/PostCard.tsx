@@ -24,7 +24,7 @@ export function PostCard({
 }: {
   judged: Judged;
   onSeen: (id: string) => void;
-  rating?: 1 | -1;
+  rating?: 1 | -1 | undefined;
   onRate: (v: 1 | -1) => void;
 }) {
   const { post, verdict } = judged;
@@ -37,7 +37,7 @@ export function PostCard({
     if (!el) return;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
+        if (e?.isIntersecting) {
           onSeen(post.id);
           io.disconnect();
         }
