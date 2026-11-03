@@ -1,3 +1,4 @@
+import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { AppShell, PageHeader } from "@/components/shell/AppShell";
@@ -35,6 +36,25 @@ function Vibe() {
   const setDial = (id: DialId, v: number) => update({ settings: { vibe: { ...profile.settings.vibe, [id]: v } } });
   const applyPreset = (d: Dials) => update({ settings: { vibe: effectiveDials(d, profile.care) } });
   const activePreset = VIBE_PRESETS.find((p) => DIALS.every((d) => effectiveDials(p.dials, profile.care)[d.id] === dials[d.id]));
+
+
+  const [newTag, setNewTag] = useState("");
+  const boosts = profile.settings.boosts ?? [];
+
+  const addBoost = (e?: FormEvent) => {
+    e?.preventDefault();
+    const clean = newTag.trim().replace(/^#+/, "");
+    if (!clean || boosts.includes(clean)) return;
+    update({ settings: { ...profile.settings, boosts: [...boosts, clean] } });
+    setNewTag("");
+  };
+
+  const removeBoost = (tag: string) => {
+    update({ settings: { ...profile.settings, boosts: boosts.filter((b) => b !== tag) } });
+  };
+
+  return (
+    <>
 
   return (
     <>

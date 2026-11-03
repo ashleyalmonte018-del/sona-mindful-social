@@ -21,6 +21,7 @@ const NAV = [
   { to: "/circle", label: "Circle" },
   { to: "/care", label: "Care" },
   { to: "/profile", label: "Profile" },
+  { to: "/accountability", label: "Accountability" }
   { to: "/settings", label: "Settings" },
 ] as const;
 
@@ -33,6 +34,15 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     setCheckIn(true);
   }, []);
   const { minutesToday } = useActiveTime(openCheckIn, profile?.settings.checkIns ?? true);
+    const [snoozed, setSnoozed] = useState(false);
+  const timeLimit = profile?.settings.timeLimit ?? 45;
+  const isLimitReached = Boolean(
+    profile?.settings.accountability &&
+    timeLimit > 0 &&
+    minutesToday >= timeLimit &&
+    !snoozed
+  );
+
 
   async function signOut() {
     await supabase.auth.signOut();
@@ -93,7 +103,43 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
           <SonaProvider value={{ profile, update }}>
             {children}
             {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} onRest={openCheckIn} />}
-            {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}
+            {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}             {isLimitReached && (
+              <div 
+                className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-md"
+                role="alertdialog"
+                aria-modal="true"
+                aria-labelledby="limit-title"
+              >
+                <div className="w-full max-w-md rounded-[2.5rem] border border-border bg-card p-8 text-center shadow-xl">
+                  <SonaFigure look={profile.look} doodle={profile.doodle} pose="sleep" className="mx-auto w-24" />
+                  <p className="eyebrow mt-4 text-lime-foreground">Time for closure</p>
+                  <h2 id="limit-title" className="heading-calm mt-2 text-3xl">
+                    Daily limit reached ({timeLimit}m)
+                  </h2>
+                  <p className="subline mt-3 text-muted-foreground">
+                    You hit your mindful threshold for today. The feed will be waiting for you tomorrow.
+                  </p>
+
+                  <div className="mt-6 flex flex-col gap-2">
+                    <Button 
+                      variant="ink" 
+                      className="w-full rounded-full py-3"
+                      onClick={() => navigate({ to: "/accountability" })}
+                    >
+                      View Accountability stats
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      className="w-full text-xs text-muted-foreground hover:text-foreground"
+                      onClick={() => setSnoozed(true)}
+                    >
+                      Snooze for 5 more minutes
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </SonaProvider>
         )}
       </main>

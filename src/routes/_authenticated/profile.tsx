@@ -1,4 +1,8 @@
+import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Globe, HeartHandshake, Lock, Music2, Plus, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { HeartHandshake, Music2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -28,10 +32,46 @@ export const Route = createFileRoute("/_authenticated/profile")({
   ),
 });
 
+function useMyPosts(userId?: string) {
+  return useQuery({
+    queryKey: ["my-posts", userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      const { data, error } = await supabase
+        .from("user_posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: Boolean(userId),
+  });
+}
+
+
 function Profile() {
   const { profile } = useSona();
   const { moods } = useMoods();
   const { entries } = useJournal();
+  const myPosts = useMyPosts(profile.id);
+  const { entries } = useJournal();
+
+//Bio editing state 
+
+  const [editingBio, setEditingBio] = useState(false);
+  const [bioText, setBioText] = useState(profile.bio || "");
+
+  const saveBio = () => {
+    update({ bio: bioText });
+    setEditingBio(false);
+  };
+
+  const togglePrivacy = () => {
+    update({ isPublic: !profile.isPublic });
+  };
+
+
   const age = AGE_MODES.find((a) => a.id === profile.ageMode)!;
   const recent = moods.slice(0, 21).reverse();
   const counts = MOODS.map((m) => ({ ...m, n: moods.filter((x) => x.mood === m.id).length })).filter((m) => m.n > 0);
@@ -59,6 +99,19 @@ function Profile() {
               <MoodDot color={moodColor(profile.settings.share.mood)} />
             </p>
           )}
+</div>
+
+          {/* --- NEW: Public / Circle-only toggle --- */}
+          <button
+            onClick={togglePrivacy}
+            className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border bg-secondary/50 px-3 py-1 text-xs text-muted-foreground transition hover:border-foreground/30"
+          >
+            {profile.isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
+            {profile.isPublic ? "Public Profile" : "Circle Only"}
+          </button>
+
+          {/* --- Buttons (already in your code) --- */}
+
           <div className="mt-6 flex justify-center gap-2">
             <Button asChild variant="ink" size="sm">
               <Link to="/studio">Edit my Sona</Link>
