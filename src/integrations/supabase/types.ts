@@ -198,6 +198,7 @@ export type Database = {
           disclosures: Json
           id: string
           image_path: string | null
+          is_shareable: boolean
           labels: Json
           media_type: string
           topics: string[]
@@ -212,6 +213,7 @@ export type Database = {
           disclosures?: Json
           id?: string
           image_path?: string | null
+          is_shareable?: boolean
           labels?: Json
           media_type?: string
           topics?: string[]
@@ -226,6 +228,7 @@ export type Database = {
           disclosures?: Json
           id?: string
           image_path?: string | null
+          is_shareable?: boolean
           labels?: Json
           media_type?: string
           topics?: string[]
