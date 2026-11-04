@@ -143,6 +143,7 @@ function MakerSpace() {
         disclosures: { edited: !!disclosures.edited, filter: !!disclosures.filter, paid: !!disclosures.paid },
         disclosure_note: note.trim() || null,
         labels,
+        is_shareable: shareable,
       });
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["posts-by"] });
