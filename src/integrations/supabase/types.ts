@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      follows: {
+        Row: {
+          approved_at: string | null
+          created_at: string
+          follower_id: string
+          following_id: string
+          id: string
+          status: string
+        }
+        Insert: {
+          approved_at?: string | null
+          created_at?: string
+          follower_id: string
+          following_id: string
+          id?: string
+          status?: string
+        }
+        Update: {
+          approved_at?: string | null
+          created_at?: string
+          follower_id?: string
+          following_id?: string
+          id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -73,7 +100,10 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accent_color: string
           age_mode: string
+          avatar_path: string | null
+          banner_path: string | null
           bio: string | null
           care_profile: string[]
           created_at: string
@@ -83,12 +113,16 @@ export type Database = {
           id: string
           is_public: boolean
           parent_passcode_hash: string | null
+          private_hides: string
           settings: Json
           sona: Json
           updated_at: string
         }
         Insert: {
+          accent_color?: string
           age_mode?: string
+          avatar_path?: string | null
+          banner_path?: string | null
           bio?: string | null
           care_profile?: string[]
           created_at?: string
@@ -98,12 +132,16 @@ export type Database = {
           id: string
           is_public?: boolean
           parent_passcode_hash?: string | null
+          private_hides?: string
           settings?: Json
           sona?: Json
           updated_at?: string
         }
         Update: {
+          accent_color?: string
           age_mode?: string
+          avatar_path?: string | null
+          banner_path?: string | null
           bio?: string | null
           care_profile?: string[]
           created_at?: string
@@ -113,6 +151,7 @@ export type Database = {
           id?: string
           is_public?: boolean
           parent_passcode_hash?: string | null
+          private_hides?: string
           settings?: Json
           sona?: Json
           updated_at?: string
@@ -151,35 +190,44 @@ export type Database = {
       }
       user_posts: {
         Row: {
+          audience: string
           body: string
           category: string
           created_at: string
+          disclosure_note: string | null
           disclosures: Json
           id: string
           image_path: string | null
           labels: Json
+          media_type: string
           topics: string[]
           user_id: string
         }
         Insert: {
+          audience?: string
           body?: string
           category?: string
           created_at?: string
+          disclosure_note?: string | null
           disclosures?: Json
           id?: string
           image_path?: string | null
           labels?: Json
+          media_type?: string
           topics?: string[]
           user_id: string
         }
         Update: {
+          audience?: string
           body?: string
           category?: string
           created_at?: string
+          disclosure_note?: string | null
           disclosures?: Json
           id?: string
           image_path?: string | null
           labels?: Json
+          media_type?: string
           topics?: string[]
           user_id?: string
         }
@@ -190,7 +238,64 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_view_gallery: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
+      is_approved_follower: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       is_public_profile: { Args: { _uid: string }; Returns: boolean }
+      people_cards: {
+        Args: { _ids: string[] }
+        Returns: {
+          accent_color: string
+          avatar_path: string
+          display_name: string
+          handle: string
+          id: string
+        }[]
+      }
+      profile_card: { Args: { _id: string }; Returns: Json }
+      public_feed_posts: {
+        Args: { _limit?: number }
+        Returns: {
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          disclosure_note: string | null
+          disclosures: Json
+          id: string
+          image_path: string | null
+          labels: Json
+          media_type: string
+          topics: string[]
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_posts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      reaches_public_feed: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
+      search_profiles: {
+        Args: { _q: string }
+        Returns: {
+          avatar_path: string
+          display_name: string
+          handle: string
+          id: string
+          is_public: boolean
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
