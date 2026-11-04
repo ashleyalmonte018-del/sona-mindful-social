@@ -4,6 +4,7 @@ import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
 import type { Json, TablesUpdate } from "@/integrations/supabase/types";
+import type { PrivateHides } from "@/lib/sona/social";
 import {
   mergeLook,
   mergeSettings,
@@ -29,6 +30,10 @@ export interface SonaProfile {
   bio: string;
   isPublic: boolean;
   passcodeHash: string | null;
+  avatarPath: string | null;
+  bannerPath: string | null;
+  accentColor: string;
+  privateHides: PrivateHides;
 }
 
 const PROFILE_KEY = ["profile"] as const;
@@ -58,10 +63,31 @@ async function fetchProfile(): Promise<SonaProfile> {
     bio: row.bio ?? "",
     isPublic: row.is_public,
     passcodeHash: row.parent_passcode_hash,
+    avatarPath: row.avatar_path,
+    bannerPath: row.banner_path,
+    accentColor: row.accent_color,
+    privateHides: (["followers", "posts", "everything"].includes(row.private_hides) ? row.private_hides : "everything") as PrivateHides,
   };
 }
 
-type Patch = Partial<Pick<SonaProfile, "displayName" | "handle" | "ageMode" | "care" | "look" | "doodle" | "bio" | "isPublic" | "passcodeHash">> & {
+type Patch = Partial<
+  Pick<
+    SonaProfile,
+    | "displayName"
+    | "handle"
+    | "ageMode"
+    | "care"
+    | "look"
+    | "doodle"
+    | "bio"
+    | "isPublic"
+    | "passcodeHash"
+    | "avatarPath"
+    | "bannerPath"
+    | "accentColor"
+    | "privateHides"
+  >
+> & {
   settings?: Partial<SonaSettings>;
 };
 
@@ -77,6 +103,10 @@ function toRow(p: SonaProfile, patch: Patch) {
   if (patch.bio !== undefined) row.bio = patch.bio;
   if (patch.isPublic !== undefined) row.is_public = patch.isPublic;
   if (patch.passcodeHash !== undefined) row.parent_passcode_hash = patch.passcodeHash;
+  if (patch.avatarPath !== undefined) row.avatar_path = patch.avatarPath;
+  if (patch.bannerPath !== undefined) row.banner_path = patch.bannerPath;
+  if (patch.accentColor !== undefined) row.accent_color = patch.accentColor;
+  if (patch.privateHides !== undefined) row.private_hides = patch.privateHides;
   return row;
 }
 
