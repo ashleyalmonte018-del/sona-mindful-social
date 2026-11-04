@@ -255,6 +255,20 @@ function MakerSpace() {
                 <Lock className="mt-0.5 size-3.5 shrink-0" /> Your account is private, so this only reaches your approved followers.
               </p>
             )}
+                        <label className="mt-3 flex items-start gap-3 rounded-2xl border border-border p-3">
+              <input
+                type="checkbox"
+                checked={shareable}
+                onChange={(e) => setShareable(e.target.checked)}
+                className="mt-0.5 size-4"
+              />
+              <span className="text-sm">
+                Let others share this post
+                <span className="block text-xs text-muted-foreground">
+                  When sharing arrives, people will be able to pass this post along.
+                </span>
+              </span>
+            </label>
           </section>
 
           <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-soft">
