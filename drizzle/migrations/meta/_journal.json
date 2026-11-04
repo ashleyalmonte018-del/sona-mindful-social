@@ -1,33 +1,40 @@
 {
-  "version": "7",
+  "version": 7,
   "dialect": "postgresql",
   "entries": [
     {
       "idx": 0,
-      "version": "7",
+      "version": 7,
       "when": 1793638070769,
       "tag": "0000_sona_profiles_and_care",
       "breakpoints": true
     },
     {
       "idx": 1,
-      "version": "7",
+      "version": 7,
       "when": 1793664231419,
       "tag": "0001_sona_posts_usage_family",
       "breakpoints": true
     },
     {
       "idx": 2,
-      "version": "7",
+      "version": 7,
       "when": 1793664343646,
       "tag": "0002_post_media_policies",
       "breakpoints": true
     },
     {
       "idx": 3,
-      "version": "7",
+      "version": 7,
       "when": 1793750937200,
       "tag": "0003_profiles_follows_makerspace",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": 7,
+      "when": 1793833200000,
+      "tag": "0004_post_shareable",
       "breakpoints": true
     }
   ]
