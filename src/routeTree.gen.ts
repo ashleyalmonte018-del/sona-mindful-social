@@ -17,12 +17,15 @@ import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/c
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
+import { Route as AuthenticatedMakerspaceRouteImport } from './routes/_authenticated/makerspace'
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
+import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
+import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -64,6 +67,11 @@ const AuthenticatedFeedRoute = AuthenticatedFeedRouteImport.update({
   path: '/feed',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMakerspaceRoute = AuthenticatedMakerspaceRouteImport.update({
+  id: '/makerspace',
+  path: '/makerspace',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedParentRoute = AuthenticatedParentRouteImport.update({
   id: '/parent',
   path: '/parent',
@@ -94,6 +102,17 @@ const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
   path: '/zone',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedPeopleIndexRoute =
+  AuthenticatedPeopleIndexRouteImport.update({
+    id: '/people/',
+    path: '/people/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPeopleIdRoute = AuthenticatedPeopleIdRouteImport.update({
+  id: '/people/$id',
+  path: '/people/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,12 +122,15 @@ export interface FileRoutesByFullPath {
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/makerspace': typeof AuthenticatedMakerspaceRoute
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
+  '/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/people/': typeof AuthenticatedPeopleIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,12 +140,15 @@ export interface FileRoutesByTo {
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
+  '/makerspace': typeof AuthenticatedMakerspaceRoute
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
+  '/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/people': typeof AuthenticatedPeopleIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -135,12 +160,15 @@ export interface FileRoutesById {
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/curate': typeof AuthenticatedCurateRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
+  '/_authenticated/makerspace': typeof AuthenticatedMakerspaceRoute
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
   '/_authenticated/zone': typeof AuthenticatedZoneRoute
+  '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
+  '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -152,12 +180,15 @@ export interface FileRouteTypes {
     | '/circle'
     | '/curate'
     | '/feed'
+    | '/makerspace'
     | '/parent'
     | '/profile'
     | '/settings'
     | '/studio'
     | '/vibe'
     | '/zone'
+    | '/people/$id'
+    | '/people/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -167,12 +198,15 @@ export interface FileRouteTypes {
     | '/circle'
     | '/curate'
     | '/feed'
+    | '/makerspace'
     | '/parent'
     | '/profile'
     | '/settings'
     | '/studio'
     | '/vibe'
     | '/zone'
+    | '/people/$id'
+    | '/people'
   id:
     | '__root__'
     | '/'
@@ -183,12 +217,15 @@ export interface FileRouteTypes {
     | '/_authenticated/circle'
     | '/_authenticated/curate'
     | '/_authenticated/feed'
+    | '/_authenticated/makerspace'
     | '/_authenticated/parent'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
     | '/_authenticated/studio'
     | '/_authenticated/vibe'
     | '/_authenticated/zone'
+    | '/_authenticated/people/$id'
+    | '/_authenticated/people/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -255,6 +292,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/makerspace': {
+      id: '/_authenticated/makerspace'
+      path: '/makerspace'
+      fullPath: '/makerspace'
+      preLoaderRoute: typeof AuthenticatedMakerspaceRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/parent': {
       id: '/_authenticated/parent'
       path: '/parent'
@@ -297,6 +341,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedZoneRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/people/': {
+      id: '/_authenticated/people/'
+      path: '/people'
+      fullPath: '/people/'
+      preLoaderRoute: typeof AuthenticatedPeopleIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/people/$id': {
+      id: '/_authenticated/people/$id'
+      path: '/people/$id'
+      fullPath: '/people/$id'
+      preLoaderRoute: typeof AuthenticatedPeopleIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -306,12 +364,15 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
+  AuthenticatedMakerspaceRoute: typeof AuthenticatedMakerspaceRoute
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
   AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
+  AuthenticatedPeopleIdRoute: typeof AuthenticatedPeopleIdRoute
+  AuthenticatedPeopleIndexRoute: typeof AuthenticatedPeopleIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -320,12 +381,15 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedCurateRoute: AuthenticatedCurateRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,
+  AuthenticatedMakerspaceRoute: AuthenticatedMakerspaceRoute,
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedVibeRoute: AuthenticatedVibeRoute,
   AuthenticatedZoneRoute: AuthenticatedZoneRoute,
+  AuthenticatedPeopleIdRoute: AuthenticatedPeopleIdRoute,
+  AuthenticatedPeopleIndexRoute: AuthenticatedPeopleIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
