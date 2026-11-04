@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Check, ImagePlus, Lock, Video } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -337,7 +337,7 @@ function MakerSpace() {
   );
 }
 
-function DropZone({ icon, label, hint, accept, onFile }: { icon: React.ReactNode; label: string; hint: string; accept: string; onFile: (f: File | undefined) => void }) {
+function DropZone({ icon, label, hint, accept, onFile }: { icon: ReactNode; label: string; hint: string; accept: string; onFile: (f: File | undefined) => void }) {
   return (
     <label className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[1.75rem] border-2 border-dashed border-border bg-card/60 px-6 py-16 text-center transition hover:border-foreground/40">
       <span className="text-muted-foreground">{icon}</span>
