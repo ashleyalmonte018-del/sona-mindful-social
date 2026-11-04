@@ -16,7 +16,7 @@ export function Gallery({
   posts: UserPost[];
   author: PersonCard | undefined;
   labelStyle: LabelStyle;
-  isMine?: boolean;
+  isMine?: boolean | undefined;
 }) {
   const [open, setOpen] = useState<UserPost | null>(null);
   return (

@@ -63,8 +63,8 @@ function Profile() {
 
   async function setImage(kind: "avatar" | "banner", file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Pick an image file");
-    if (file.size > PROFILE_IMAGE_MAX_BYTES) return toast.error("Profile images can be up to 5 MB");
+    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    if (file.size > PROFILE_IMAGE_MAX_BYTES) { toast.error("Profile images can be up to 5 MB"); return; }
     setUploading(kind);
     try {
       const path = await uploadMedia("profile-media", profile.id, file, fileExt(file, "jpg"));

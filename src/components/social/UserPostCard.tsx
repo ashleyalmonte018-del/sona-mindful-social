@@ -44,7 +44,7 @@ export function UserPostCard({
   post: UserPost;
   author: PersonCard | undefined;
   labelStyle: LabelStyle;
-  isMine?: boolean;
+  isMine?: boolean | undefined;
 }) {
   const [why, setWhy] = useState(false);
   const loud = labelStyle === "loud" && post.labels.length > 0;

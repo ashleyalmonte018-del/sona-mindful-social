@@ -238,7 +238,7 @@ export function useSignedUrl(bucket: "post-media" | "profile-media", path: strin
 
 export async function uploadMedia(bucket: "post-media" | "profile-media", userId: string, body: Blob, ext: string) {
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-  const { error } = await supabase.storage.from(bucket).upload(path, body, { contentType: body.type || undefined, upsert: false });
+  const { error } = await supabase.storage.from(bucket).upload(path, body, { upsert: false, ...(body.type ? { contentType: body.type } : {}) });
   if (error) throw error;
   return path;
 }

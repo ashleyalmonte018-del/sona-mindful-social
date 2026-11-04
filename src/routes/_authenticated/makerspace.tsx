@@ -66,7 +66,9 @@ function MakerSpace() {
   const [busy, setBusy] = useState(false);
   const [tried, setTried] = useState(false);
 
-  useEffect(() => () => video && URL.revokeObjectURL(video.url), [video]);
+  useEffect(() => () => {
+    if (video) URL.revokeObjectURL(video.url);
+  }, [video]);
 
   const detected = type === "photo" && source ? detectEdits(edit) : { edited: false, filter: false };
   const disclosures: DraftDisclosures = {
@@ -87,8 +89,8 @@ function MakerSpace() {
 
   async function pickPhoto(file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("image/")) return toast.error("Pick an image file");
-    if (file.size > PHOTO_MAX_BYTES) return toast.error("Photos can be up to 15 MB");
+    if (!file.type.startsWith("image/")) { toast.error("Pick an image file"); return; }
+    if (file.size > PHOTO_MAX_BYTES) { toast.error("Photos can be up to 15 MB"); return; }
     try {
       setSource(await loadSource(file));
       setPhotoBytes(file.size);
@@ -100,8 +102,8 @@ function MakerSpace() {
 
   function pickVideo(file: File | undefined) {
     if (!file) return;
-    if (!file.type.startsWith("video/")) return toast.error("Pick a video file");
-    if (file.size > VIDEO_MAX_BYTES) return toast.error("Videos can be up to 50 MB");
+    if (!file.type.startsWith("video/")) { toast.error("Pick a video file"); return; }
+    if (file.size > VIDEO_MAX_BYTES) { toast.error("Videos can be up to 50 MB"); return; }
     const url = URL.createObjectURL(file);
     const probe = document.createElement("video");
     probe.preload = "metadata";
