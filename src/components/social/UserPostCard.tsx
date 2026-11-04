@@ -56,7 +56,7 @@ export function UserPostCard({
   return (
     <article className="rounded-[1.75rem] border border-border bg-card p-5 shadow-soft md:p-6">
       <header className="flex items-center gap-3">
-        <Link to={isMine ? "/profile" : "/people/$id"} params={{ id: post.userId }} className="flex min-w-0 flex-1 items-center gap-3">
+        <Link to="/people/$id" params={{ id: post.userId }} className="flex min-w-0 flex-1 items-center gap-3">
           <PersonAvatar path={author?.avatar_path} name={name} className="size-10" />
           <div className="min-w-0">
             <p className="truncate text-sm font-medium">{name}</p>
