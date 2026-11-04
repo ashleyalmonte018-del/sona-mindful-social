@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Progress } from "@/components/ui/progress";
 import { CirclePanel } from "@/components/feed/CirclePanel";
 import { HeldLine, PostCard } from "@/components/feed/PostCard";
+import { SocialFeed } from "@/components/social/SocialFeed";
 import { AppShell } from "@/components/shell/AppShell";
 import { BreathingPrompt } from "@/components/shell/BreathingPrompt";
 import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
@@ -58,6 +59,7 @@ function Feed() {
   const [edKey, setEdKey] = useState("");
   const [shown, setShown] = useState<string[]>([]);
   const [refresh, setRefresh] = useState<"idle" | "breathing" | "reflect">("idle");
+  const [section, setSection] = useState<"edition" | "community" | "circle">("edition");
   const [reflection] = useState(() => REFLECTIONS[Math.floor(Math.random() * REFLECTIONS.length)]!);
 
   useEffect(() => {
@@ -153,6 +155,34 @@ function Feed() {
           )}
         </div>
 
+        {/* Sections: curated edition, Public Feed posts, friends-only Circle posts */}
+        <div role="tablist" aria-label="Feed sections" className="mt-6 inline-flex rounded-full bg-ink p-1">
+          {(
+            [
+              ["edition", "Today's edition"],
+              ["community", "Community"],
+              ["circle", "Circle"],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              role="tab"
+              aria-selected={section === id}
+              onClick={() => setSection(id)}
+              className={cn(
+                "rounded-full px-4 py-1.5 text-sm transition",
+                section === id ? "bg-lime text-lime-foreground" : "text-ink-foreground/70 hover:text-ink-foreground",
+              )}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {section !== "edition" ? (
+          <SocialFeed section={section} />
+        ) : (
+        <>
         {/* Progress + refresh */}
         <div className="mt-6 flex items-center gap-4">
           <div className="flex-1">
@@ -225,6 +255,8 @@ function Feed() {
               <p className="subline mt-6 text-center">This bucket is done. Peek at another, or close the app — both are wins.</p>
             )}
           </>
+        )}
+        </>
         )}
       </div>
 

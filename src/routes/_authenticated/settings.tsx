@@ -188,6 +188,32 @@ function Settings() {
               <Link to="/accountability">Open Accountability</Link>
             </Button>
           )}
+          <div className="mt-6 border-t border-border pt-5">
+            <p className="font-medium">Trigger labels on people's posts</p>
+            <p className="text-sm text-muted-foreground">Posters pick the labels. You pick how loudly they show — for every post.</p>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2" role="radiogroup" aria-label="Trigger label style">
+              {(
+                [
+                  ["loud", "Loud", "Big and hard to miss. The post stays covered until you choose to show it."],
+                  ["quiet", "Quiet", "A small line above the post. Visible, but it doesn't get in the way."],
+                ] as const
+              ).map(([id, label, blurb]) => (
+                <button
+                  key={id}
+                  role="radio"
+                  aria-checked={s.labelStyle === id}
+                  onClick={() => update({ settings: { labelStyle: id } })}
+                  className={cn(
+                    "rounded-[1.5rem] border p-4 text-left transition",
+                    s.labelStyle === id ? "border-ink bg-ink text-ink-foreground" : "border-border bg-background hover:border-foreground/40",
+                  )}
+                >
+                  <p className={cn("heading-calm", id === "loud" ? "text-3xl" : "text-xl")}>{label}</p>
+                  <p className={cn("mt-1 text-sm", s.labelStyle === id ? "text-ink-foreground/75" : "text-muted-foreground")}>{blurb}</p>
+                </button>
+              ))}
+            </div>
+          </div>
         </section>
 
         <section className="rounded-[2rem] border border-border bg-card p-6 shadow-soft">

@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
@@ -8,6 +9,7 @@ import { CheckInOverlay } from "@/components/shell/CheckInOverlay";
 import { SonaHelper } from "@/components/shell/SonaHelper";
 import { SonaProvider } from "@/components/shell/SonaContext";
 import { useSonaProfile } from "@/hooks/use-sona-profile";
+import { useFollowRequests } from "@/hooks/use-social";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveTime } from "@/lib/sona/usage";
 import { cn } from "@/lib/utils";
@@ -34,6 +36,19 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     setCheckIn(true);
   }, []);
   const { minutesToday } = useActiveTime(openCheckIn, profile?.settings.checkIns ?? true);
+
+  // Follow-request notifications: a badge on Profile, plus a gentle toast when a new one arrives.
+  const requests = useFollowRequests(profile?.id, { poll: true });
+  const pendingCount = requests.data?.length ?? 0;
+  const lastCount = useRef<number | null>(null);
+  useEffect(() => {
+    if (!requests.isSuccess) return;
+    if (lastCount.current !== null && pendingCount > lastCount.current) {
+      const who = requests.data[0]?.person?.display_name ?? "Someone";
+      toast(`${who} asked to follow you`, { action: { label: "Review", onClick: () => navigate({ to: "/profile" }) } });
+    }
+    lastCount.current = pendingCount;
+  }, [pendingCount, requests.isSuccess, requests.data, navigate]);
     const [snoozed, setSnoozed] = useState(false);
   const timeLimit = profile?.settings.timeLimit ?? 45;
   const isLimitReached = Boolean(
@@ -66,6 +81,11 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
                     activeProps={{ className: "!bg-lime !text-lime-foreground" }}
                   >
                     {n.label}
+                    {n.to === "/profile" && pendingCount > 0 && (
+                      <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-lime px-1.5 text-[0.65rem] font-medium text-lime-foreground" aria-label={`${pendingCount} follow requests`}>
+                        {pendingCount}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
