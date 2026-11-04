@@ -222,6 +222,8 @@ export interface SonaSettings {
   blockAI: boolean;
   accountability: boolean;
   timeLimit: number;
+  /** How trigger labels on people's posts look to you: big and hard to miss, or small but visible. */
+  labelStyle: "loud" | "quiet";
 }
 
 export const DEFAULT_SETTINGS: SonaSettings = {
@@ -247,6 +249,7 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   blockAI: false,
   accountability: false,
   timeLimit: 45,
+  labelStyle: "loud",
 };
 
 export function mergeSettings(raw: unknown): SonaSettings {

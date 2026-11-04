@@ -10,9 +10,14 @@
 - [ ] Fix all type errors from strict settings
 - [ ] Minigame titles: switch from bubble letters to the site's calm uppercase heading style
 - [ ] Family Center: parent links to a Sprout account with a passcode → Parent View (protection check, weekly time + hidden-post counts, no access to posts/messages/searches)
-- [ ] Vibe: type your own topics/hashtags to see more of
+- [x] Vibe: type your own topics/hashtags
 - [ ] Settings: toggle to label AI-generated/edited content; toggle to ban all AI-generated content
 - [ ] Curate: 4th option "Label only" → post shows a summary first, then View / Worth it / Meh
-- [ ] Profile: bio/description, public/private toggle, gallery of own posts, "Post" button
-- [ ] Makerspace: create a post with required disclosures (edits, filters, paid partnership), trigger labels as Loud or Quiet; "See why" bubble on posts
+- [x] Profile: bio, avatar, banner, accent colour, private toggle + hide scope, follow requests, gallery, Post button
+- [x] Maker Space: photo editor, text + video posts, required disclosures, trigger labels, See why, audience (Public Feed / Circle)
 - [ ] Accountability page (toggle): time limits, time spent, month of check-ins, most-watched content, request help
+
+## Batch 2 (later)
+- [ ] Merge Zone + Circle pages
+- [ ] Theme colours (presets + custom picker)
+- [ ] Rename age modes: Sapling / Sprout / Bloom
