@@ -65,6 +65,8 @@ function MakerSpace() {
   const [labels, setLabels] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [tried, setTried] = useState(false);
+  const [shareable, setShareable] = useState(true);
+
 
   useEffect(() => () => {
     if (video) URL.revokeObjectURL(video.url);
