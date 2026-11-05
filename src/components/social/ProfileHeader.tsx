@@ -40,6 +40,7 @@ export function ProfileHeader({
   children?: ReactNode;
 }) {
   const banner = useSignedUrl("profile-media", bannerPath);
+  const [followersOpen, setFollowersOpen] = useState(false);
   return (
     <section className="overflow-hidden rounded-[2rem] border border-border bg-card shadow-soft">
       <div
@@ -72,8 +73,15 @@ export function ProfileHeader({
           ) : (
             <>
               <div>
-                <dd className="inline font-medium">{followers}</dd> <dt className="inline text-muted-foreground">followers</dt>
-              </div>
+  <button
+    type="button"
+    className="inline underline decoration-dotted underline-offset-4 hover:text-foreground"
+    onClick={() => setFollowersOpen(true)}
+  >
+    <dd className="inline font-medium">{followers}</dd> <dt className="inline text-muted-foreground">followers</dt>
+  </button>
+</div>
+
               <div>
                 <dd className="inline font-medium">{following ?? 0}</dd> <dt className="inline text-muted-foreground">following</dt>
               </div>
