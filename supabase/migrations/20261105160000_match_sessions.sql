@@ -22,3 +22,4 @@ do $$ begin
   alter publication supabase_realtime add table public.match_sessions;
 exception when duplicate_object then null;
 end $$;
+notify pgrst, 'reload schema';
