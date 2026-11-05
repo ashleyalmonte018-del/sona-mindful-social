@@ -12,7 +12,7 @@ export function CirclePanel({ limit = 4 }: { limit?: number }) {
   const q = useCircleMembers();
   const real = q.data ?? [];
   const sample = q.isSuccess && real.length === 0;
-  const members = (sample ? SAMPLE_MEMBERS : real).slice(0, limit);
+  const members = real.slice(0, limit);
   return (
     <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-soft">
       <div className="flex items-center justify-between">
