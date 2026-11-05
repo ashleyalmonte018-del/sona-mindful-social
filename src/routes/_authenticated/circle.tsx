@@ -13,6 +13,8 @@ import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
+import { CircleChat } from "@/components/social/CircleChat";
+import { OnlineMatch } from "@/components/zone/OnlineMatch";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
 import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
 import { CIRCLE_TIERS, filterByTier, tierCounts, tierLabel, type TierId } from "@/lib/sona/tiers";
@@ -260,6 +262,7 @@ function CirclePage() {
               ))}
             </div>
           </section>
+          <OnlineMatch myId={profile.id} />
         </div>
 
         <CircleSidePanel members={real} usingSamples={usingSamples} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
@@ -363,6 +366,7 @@ function CircleSidePanel({
 
   return (
     <aside aria-label="Circle controls" className="space-y-4 lg:sticky lg:top-24 lg:self-start">
+      <CircleChat members={members} myId={profile.id} />
       <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
         <h2 className="heading-calm text-2xl">Circle controls</h2>
         <div className="mt-3 divide-y divide-border">

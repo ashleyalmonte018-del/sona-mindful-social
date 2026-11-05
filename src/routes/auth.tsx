@@ -105,7 +105,7 @@ function AuthPage() {
               <p className="subline mt-3">
                 We sent a confirmation link to {email}. Tap it and you'll land right in your feed.
               </p>
-              <Button variant="soft" className="mt-6" onClick={() => setSent(false)}>
+              <Button variant="soft" className="mt-6" onClick={() => { setSent(false); setEmail(""); setPassword(""); setName(""); }}>
                 Back
               </Button>
             </div>
@@ -159,7 +159,7 @@ function AuthPage() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "in" ? "New here? " : "Already have an account? "}
-                <button className="text-foreground underline underline-offset-4" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+                <button className="text-foreground underline underline-offset-4" onClick={() => { setMode(mode === "in" ? "up" : "in"); setEmail(""); setPassword(""); setName(""); }}>
                   {mode === "in" ? "Create an account" : "Sign in"}
                 </button>
               </p>

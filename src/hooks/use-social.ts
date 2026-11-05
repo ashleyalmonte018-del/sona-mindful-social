@@ -222,6 +222,23 @@ export function useDeletePost() {
   });
 }
 
+export function useSharePost() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      const { error } = await supabase.rpc("share_post", { _post: postId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast.success("Shared to the feed");
+      qc.invalidateQueries({ queryKey: ["feed-public"] });
+      qc.invalidateQueries({ queryKey: ["feed-circle"] });
+      qc.invalidateQueries({ queryKey: ["posts-by"] });
+    },
+    onError: (e: Error) => toast.error("Couldn't share that", { description: e.message }),
+  });
+}
+
 /** Private buckets: everything is served through short-lived signed links. */
 export function useSignedUrl(bucket: "post-media" | "profile-media", path: string | null | undefined) {
   return useQuery({

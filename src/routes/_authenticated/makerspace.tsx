@@ -12,6 +12,8 @@ import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { fileExt, uploadMedia } from "@/hooks/use-social";
+import { useCircleTiers } from "@/hooks/use-circle";
+import { CIRCLE_TIERS, type TierId } from "@/lib/sona/tiers";
 import { supabase } from "@/integrations/supabase/client";
 import { DEFAULT_EDIT, detectEdits, type EditState } from "@/lib/sona/image-edit";
 import {
@@ -66,6 +68,8 @@ function MakerSpace() {
   const [busy, setBusy] = useState(false);
   const [tried, setTried] = useState(false);
   const [shareable, setShareable] = useState(true);
+  const [circleTiers, setCircleTiers] = useState<TierId[]>([]);
+  const tiers = useCircleTiers(profile.id);
 
 
   useEffect(() => () => {
@@ -144,6 +148,7 @@ function MakerSpace() {
         disclosure_note: note.trim() || null,
         labels,
         is_shareable: shareable,
+        circle_tiers: audience === "circle" ? circleTiers : [],
       });
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["posts-by"] });
@@ -254,6 +259,19 @@ function MakerSpace() {
               <p className="mt-3 flex items-start gap-2 rounded-2xl bg-secondary px-3 py-2 text-xs text-muted-foreground">
                 <Lock className="mt-0.5 size-3.5 shrink-0" /> Your account is private, so this only reaches your approved followers.
               </p>
+            )}
+            {audience === "circle" && (
+              <div className="mt-4 rounded-2xl border border-border p-3">
+                <p className="text-sm font-medium">Circle tiers</p>
+                <p className="mt-1 text-xs text-muted-foreground">Leave empty for your whole Circle, or choose who can see this post.</p>
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {CIRCLE_TIERS.map((tier) => {
+                    const on = circleTiers.includes(tier.id);
+                    return <button key={tier.id} type="button" aria-pressed={on} onClick={() => setCircleTiers((v) => on ? v.filter((x) => x !== tier.id) : [...v, tier.id])} className={cn("rounded-full border px-2 py-1 text-xs", on ? "border-ink bg-ink text-ink-foreground" : "border-border")}>{tier.label}</button>;
+                  })}
+                </div>
+                {tiers.isLoading && <p className="mt-2 text-xs text-muted-foreground">Loading your tier list…</p>}
+              </div>
             )}
                         <label className="mt-3 flex items-start gap-3 rounded-2xl border border-border p-3">
               <input
