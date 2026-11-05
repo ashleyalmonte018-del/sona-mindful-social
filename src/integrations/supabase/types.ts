@@ -347,6 +347,17 @@ export type Database = {
     CompositeTypes: {
       [_ in never]: never
     }
+
+    followers_list: {
+  Args: { _owner: string }
+  Returns: {
+    id: string
+    display_name: string
+    handle: string
+    avatar_path: string | null
+  }[]
+}
+
   }
 }
 
