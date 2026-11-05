@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      circle_tier_members: {
+        Row: {
+          created_at: string
+          id: string
+          member_id: string
+          owner_id: string
+          tier: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          member_id: string
+          owner_id: string
+          tier: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          member_id?: string
+          owner_id?: string
+          tier?: string
+        }
+        Relationships: []
+      }
       follows: {
         Row: {
           approved_at: string | null
@@ -245,6 +269,22 @@ export type Database = {
       can_view_gallery: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
+      }
+      circle_sonas: {
+        Args: never
+        Returns: {
+          accent_color: string
+          allows_play: boolean
+          artist: string
+          avatar_path: string
+          display_name: string
+          handle: string
+          id: string
+          mood: string
+          quiet: boolean
+          sona: Json
+          song: string
+        }[]
       }
       is_approved_follower: {
         Args: { _owner: string; _viewer: string }
