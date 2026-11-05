@@ -70,7 +70,7 @@ function CirclePage() {
   const membersQ = useCircleMembers();
   const real = membersQ.data ?? [];
   const usingSamples = membersQ.isSuccess && real.length === 0;
-  const members = usingSamples ? SAMPLE_MEMBERS : real;
+  const members = real;
   const tiers = useCircleTiers(profile.id);
   const [tierFilter, setTierFilter] = useState<TierId | "all">("all");
 
