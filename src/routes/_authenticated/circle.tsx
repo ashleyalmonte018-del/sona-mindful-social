@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { Layers, Music2, Search, Tag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -16,6 +17,8 @@ import { SonaFigure } from "@/components/sona/SonaFigure";
 import { OnlineMatch } from "@/components/zone/OnlineMatch";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
 import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
+import { usePeopleCards } from "@/hooks/use-social";
+import { supabase } from "@/integrations/supabase/client";
 import { CIRCLE_TIERS, filterByTier, tierCounts, tierLabel, type TierId } from "@/lib/sona/tiers";
 import { moodColor, moodLabel, type MoodId, type SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
@@ -228,6 +231,8 @@ function CirclePage() {
             </>
           )}
 
+          <GameHistory myId={profile.id} />
+
           {/* Minigames */}
           <section className="mt-12">
             <div className="flex flex-wrap items-end justify-between gap-4">
@@ -277,12 +282,74 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              {opponent === "practice" || !["ttt", "rps"].includes(game.id) ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id === "ttt" ? "tic-tac-toe" : "rps"} fallback={<game.C players={players} />} />}
+              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id} fallback={<game.C players={players} />} />}
             </>
           )}
         </DialogContent>
       </Dialog>
     </>
+  );
+}
+
+const GAME_LABELS: Record<string, string> = {
+  ttt: "Tic-Tac-Toe",
+  rps: "Rock, Paper, Scissors",
+  oe: "Odds or Evens",
+  dots: "Dots and Boxes",
+};
+
+function GameHistory({ myId }: { myId: string }) {
+  const resultsQ = useQuery({
+    queryKey: ["game-history", myId],
+    refetchInterval: 30_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("game_results")
+        .select("id,game,winner_id,loser_id,player_a_id,player_b_id,created_at")
+        .or(`player_a_id.eq.${myId},player_b_id.eq.${myId}`)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const opponentIds = (resultsQ.data ?? []).map((result) => result.player_a_id === myId ? result.player_b_id : result.player_a_id);
+  const peopleQ = usePeopleCards(opponentIds);
+
+  return (
+    <section aria-label="Game record" className="mt-12 rounded-[2rem] border border-border bg-card p-5 shadow-soft">
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow text-muted-foreground">Circle record</p>
+          <h2 className="heading-calm text-3xl">Wins & losses</h2>
+        </div>
+        <span className="text-xs text-muted-foreground">Your last 20 rounds</span>
+      </div>
+      {resultsQ.error ? (
+        <p className="mt-4 text-sm text-muted-foreground">Game records will appear after the latest database migration.</p>
+      ) : resultsQ.isLoading ? (
+        <p className="mt-4 text-sm text-muted-foreground">Loading your record…</p>
+      ) : (resultsQ.data ?? []).length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">Finish a round with a Circle member and your record will appear here.</p>
+      ) : (
+        <div className="mt-4 grid gap-2">
+          {(resultsQ.data ?? []).map((result) => {
+            const opponentId = result.player_a_id === myId ? result.player_b_id : result.player_a_id;
+            const opponent = peopleQ.data?.[opponentId];
+            const outcome = result.winner_id === null ? "Draw" : result.winner_id === myId ? "Win" : "Loss";
+            return (
+              <div key={result.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 px-3 py-2 text-sm">
+                <div className="min-w-0">
+                  <p className="truncate">{GAME_LABELS[result.game] ?? result.game} · {opponent?.display_name ?? "Circle member"}</p>
+                  <p className="text-xs text-muted-foreground">{new Date(result.created_at).toLocaleDateString()}</p>
+                </div>
+                <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs", outcome === "Win" ? "bg-lime-soft text-foreground" : outcome === "Loss" ? "bg-orange-soft text-foreground" : "bg-muted text-muted-foreground")}>{outcome}</span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
   );
 }
 
