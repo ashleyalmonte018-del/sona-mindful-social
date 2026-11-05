@@ -14,7 +14,7 @@ import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
-import { SAMPLE_MEMBERS, useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
+import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
 import { CIRCLE_TIERS, filterByTier, tierCounts, tierLabel, type TierId } from "@/lib/sona/tiers";
 import { moodColor, moodLabel, type MoodId, type SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
