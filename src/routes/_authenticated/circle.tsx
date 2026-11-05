@@ -383,6 +383,32 @@ function CircleSidePanel({
         </div>
       </section>
 
+            <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
+        <h2 className="heading-calm text-2xl">Your Zone</h2>
+        <p className="subline text-sm">Pick whose Sonas visit your pocket world.</p>
+        {members.length === 0 ? (
+          <div className="mt-3 rounded-2xl bg-secondary p-4 text-sm">
+            <p>Your Zone starts empty. Follow people (and have them follow you back), then choose who appears here.</p>
+          </div>
+        ) : (
+          <ul className="mt-3 divide-y divide-border">
+            {members.map((m) => {
+              const id = `zone-${m.id}`;
+              return (
+                <li key={m.id} className="flex items-center gap-3 py-2.5">
+                  <Checkbox id={id} checked={inZone(m.id)} onCheckedChange={(v) => setZone(m.id, v === true)} />
+                  <div className="min-w-0 flex-1">
+                    <Label htmlFor={id} className="cursor-pointer truncate font-normal text-sm">{m.name}</Label>
+                    {m.handle && <p className="truncate text-xs text-muted-foreground">@{m.handle}</p>}
+                  </div>
+                  {inZone(m.id) && <span className="text-xs text-muted-foreground">In your Zone</span>}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
       <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
         <h2 className="heading-calm flex items-center gap-2 text-2xl">
           Tiers <Layers className="size-5 text-muted-foreground" />
