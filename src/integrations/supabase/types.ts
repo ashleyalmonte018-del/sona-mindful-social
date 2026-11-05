@@ -340,15 +340,7 @@ export type Database = {
           is_public: boolean
         }[]
       }
-    }
-    Enums: {
-      [_ in never]: never
-    }
-    CompositeTypes: {
-      [_ in never]: never
-    }
-
-    followers_list: {
+      followers_list: {
   Args: { _owner: string }
   Returns: {
     id: string
@@ -357,6 +349,14 @@ export type Database = {
     avatar_path: string | null
   }[]
 }
+
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
 
   }
 }
