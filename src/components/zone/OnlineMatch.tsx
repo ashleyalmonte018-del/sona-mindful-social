@@ -6,11 +6,12 @@ import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import type { Players } from "@/components/zone/Games";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import { oddsEvensWinner, playDots, rpsResult, tttWinner, allLines, isTaken, newDots, dotsScore, type DotsLine, type DotsState, type Mark, type Parity, type RPS } from "@/lib/sona/games";
 import { cn } from "@/lib/utils";
 
 export type OnlineGameId = "ttt" | "rps" | "oe" | "dots";
-type GameState = { board?: Mark[]; turn?: string; winner?: string | null; moves?: Record<string, string>; result?: string; call?: Parity; fingers?: Record<string, number>; dots?: DotsState };
+type GameState = { board?: Mark[] | undefined; turn?: string | undefined; winner?: string | null | undefined; moves?: Record<string, string> | undefined; result?: string | null | undefined; call?: Parity | undefined; fingers?: Record<string, number> | undefined; dots?: DotsState | undefined };
 type Match = { id: string; game: OnlineGameId; host_id: string; guest_id: string | null; state: GameState; status: string };
 type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode };
 
@@ -47,7 +48,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
         supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", opponentId).eq("guest_id", myId).in("status", ["waiting", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
       const existing = mine.data ?? theirs.data;
-      const created = existing ? null : await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: emptyState(game, myId) }).select("*").single();
+      const created = existing ? null : await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: emptyState(game, myId) as unknown as Json }).select("*").single();
       const data = existing ?? created?.data;
       const error = existing ? mine.error ?? theirs.error : created?.error;
       if (!active) return;
@@ -101,7 +102,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
 
   async function save(state: GameState, status = "active") {
     if (!match) return;
-    const { data, error } = await supabase.from("match_sessions").update({ state, status, updated_at: new Date().toISOString() }).eq("id", match.id).select("*").single();
+    const { data, error } = await supabase.from("match_sessions").update({ state: state as unknown as Json, status, updated_at: new Date().toISOString() }).eq("id", match.id).select("*").single();
     if (error) toast.error("That move didn't go through", { description: error.message });
     else setMatch(data as Match);
   }
@@ -147,7 +148,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
     const played = playDots(match.state.dots, line);
     const score = dotsScore(played.state);
     const result = score.done ? score.p1 === score.p2 ? "draw" : score.p1 > score.p2 ? match.host_id : match.guest_id : undefined;
-    await save({ ...match.state, dots: played.state, turn: played.state.turn === 1 ? match.host_id : match.guest_id, result }, result ? "finished" : "active");
+    await save({ ...match.state, dots: played.state, turn: played.state.turn === 1 ? match.host_id : match.guest_id ?? match.host_id, result }, result ? "finished" : "active");
   }
 
   const practice = !match && databaseError && fallback ? <div className="mt-4">{fallback}<p className="mt-3 rounded-2xl bg-care-soft p-3 text-xs text-care">Online play is waiting for the latest database migration. Practice mode is available below.</p></div> : null;
@@ -165,7 +166,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
   </section>;
 }
 
-function OnlineScoreboard({ players, match }: { players?: Players; match?: Match }) {
+function OnlineScoreboard({ players, match }: { players: Players | undefined; match: Match | undefined }) {
   if (!players) return null;
   const hostScore = match?.game === "dots" && match.state.dots ? dotsScore(match.state.dots).p1 : match?.state.result && match.state.result === match.host_id ? 1 : 0;
   const guestScore = match?.game === "dots" && match.state.dots ? dotsScore(match.state.dots).p2 : match?.state.result && match.state.result === match.guest_id ? 1 : 0;
