@@ -248,7 +248,7 @@ html.dark {
   --sidebar-ring: oklch(0.8 0.13 70);
 
   --lime: oklch(0.8 0.13 70);
-  --lime-soft: oklch(0.36 0.06 65);
+  --lime-soft: oklch(0.31 0.05 198);
   --lime-foreground: oklch(0.2 0.04 60);
   --ink: oklch(0.92 0.03 85);
   --ink-foreground: oklch(0.2 0.035 228);

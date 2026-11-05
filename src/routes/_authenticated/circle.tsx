@@ -292,15 +292,15 @@ function ShareBar() {
 
   return (
     <section aria-label="What you're sharing" className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
-      <div className="flex flex-col gap-5 lg:flex-row lg:items-end">
-        <div className="flex items-center gap-3 lg:w-56 lg:shrink-0">
+      <div className="flex flex-col gap-5 md:flex-row md:items-end">
+        <div className="flex items-center gap-3 md:w-60 md:shrink-0">
           <SonaFigure look={profile.look} doodle={profile.doodle} pose="sing" className="w-12 shrink-0" />
           <div className="min-w-0">
             <p className="eyebrow text-muted-foreground">You're sharing</p>
             {quiet ? (
               <p className="subline text-sm">Nothing — quiet mode</p>
             ) : (
-              <p className="flex items-center gap-1.5 truncate text-sm">
+              <p className="flex items-center gap-1.5 text-sm">
                 <MoodDot color={moodColor(share.mood)} /> <span className="truncate">{share.song} — {share.artist}</span>
               </p>
             )}
@@ -325,10 +325,10 @@ function ShareBar() {
             Share song
           </Button>
         </form>
-        <div>
-          <p className="mb-1.5 text-sm">Mood dot</p>
-          <MoodPicker size="sm" value={share.mood} onPick={(m) => update({ settings: { share: { ...share, mood: m } } })} />
-        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-border pt-4">
+        <p className="text-sm">Mood dot</p>
+        <MoodPicker size="sm" value={share.mood} onPick={(m) => update({ settings: { share: { ...share, mood: m } } })} />
       </div>
     </section>
   );
