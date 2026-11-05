@@ -4,7 +4,6 @@ import { Music2 } from "lucide-react";
 import { MoodDot } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
-import { SAMPLE_MEMBERS, useCircleMembers } from "@/hooks/use-circle";
 import { moodColor } from "@/lib/sona/types";
 
 export function CirclePanel({ limit = 4 }: { limit?: number }) {
