@@ -391,6 +391,7 @@ function CircleSidePanel({
             <p>Your Zone starts empty. Follow people (and have them follow you back), then choose who appears here.</p>
           </div>
         ) : (
+          <>
           <ul className="mt-3 divide-y divide-border">
             {members.map((m) => {
               const id = `zone-${m.id}`;
@@ -423,6 +424,7 @@ function CircleSidePanel({
                 Clear
               </Button>
             </div>
+            </>
 
         )}
       </section>
