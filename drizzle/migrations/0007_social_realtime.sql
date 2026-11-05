@@ -38,20 +38,6 @@ $$;
 REVOKE EXECUTE ON FUNCTION public.share_post(uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.share_post(uuid) TO authenticated;
 
-CREATE OR REPLACE FUNCTION public.join_match(_match uuid)
-RETURNS public.match_sessions LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE result public.match_sessions;
-BEGIN
-  UPDATE public.match_sessions m SET guest_id = auth.uid(), status = 'active', updated_at = now()
-  WHERE m.id = _match AND m.status = 'waiting' AND m.host_id <> auth.uid() AND public.are_friends(m.host_id, auth.uid());
-  SELECT * INTO result FROM public.match_sessions WHERE id = _match AND (host_id = auth.uid() OR guest_id = auth.uid());
-  IF NOT FOUND THEN RAISE EXCEPTION 'Match unavailable'; END IF;
-  RETURN result;
-END;
-$$;
-REVOKE EXECUTE ON FUNCTION public.join_match(uuid) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.join_match(uuid) TO authenticated;
-
 CREATE TABLE public.circle_messages (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   sender_id uuid NOT NULL,
@@ -81,6 +67,21 @@ CREATE TABLE public.match_sessions (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+CREATE OR REPLACE FUNCTION public.join_match(_match uuid)
+RETURNS public.match_sessions LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE result public.match_sessions;
+BEGIN
+  UPDATE public.match_sessions m SET guest_id = auth.uid(), status = 'active', updated_at = now()
+  WHERE m.id = _match AND m.status = 'waiting' AND m.host_id <> auth.uid() AND public.are_friends(m.host_id, auth.uid());
+  SELECT * INTO result FROM public.match_sessions WHERE id = _match AND (host_id = auth.uid() OR guest_id = auth.uid());
+  IF NOT FOUND THEN RAISE EXCEPTION 'Match unavailable'; END IF;
+  RETURN result;
+END;
+$$;
+REVOKE EXECUTE ON FUNCTION public.join_match(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.join_match(uuid) TO authenticated;
+
 CREATE TABLE public.match_moves (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   match_id uuid NOT NULL REFERENCES public.match_sessions(id) ON DELETE CASCADE,
