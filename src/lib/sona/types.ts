@@ -1,5 +1,7 @@
 // Core Sona domain types + defaults. Pure data, safe for server and browser.
 
+import { DEFAULT_THEME, normalizeTheme, type ThemeChoice } from "./theme";
+
 export const TOPICS = [
   { id: "body", label: "Body & looks", hint: "Glow-ups, appearance, comparisons" },
   { id: "food", label: "Food & diet", hint: "Recipes, meal content, diet talk" },
@@ -228,6 +230,8 @@ export interface SonaSettings {
   timeLimit: number;
   /** How trigger labels on people's posts look to you: big and hard to miss, or small but visible. */
   labelStyle: "loud" | "quiet";
+  /** Site colours: a gradient preset or custom colour, plus light/dark mode. */
+  theme: ThemeChoice;
 }
 
 export const DEFAULT_SETTINGS: SonaSettings = {
@@ -254,6 +258,7 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   accountability: false,
   timeLimit: 45,
   labelStyle: "loud",
+  theme: DEFAULT_THEME,
 };
 
 export function mergeSettings(raw: unknown): SonaSettings {
@@ -264,6 +269,7 @@ export function mergeSettings(raw: unknown): SonaSettings {
     curate: { ...DEFAULT_SETTINGS.curate, ...(s.curate ?? {}) },
     vibe: { ...DEFAULT_SETTINGS.vibe, ...(s.vibe ?? {}) },
     share: { ...DEFAULT_SETTINGS.share, ...(s.share ?? {}) },
+    theme: normalizeTheme(s.theme),
   };
 }
 
