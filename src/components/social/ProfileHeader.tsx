@@ -9,6 +9,7 @@ import type { Json } from "@/integrations/supabase/types";
 import { PRIVATE_HIDES, type PrivateHides } from "@/lib/sona/social";
 
 export function ProfileHeader({
+  profileId,
   name,
   handle,
   bio,
@@ -23,6 +24,7 @@ export function ProfileHeader({
   hides,
   children,
 }: {
+  profileId: string;
   name: string;
   handle: string | null;
   bio: string | null;
