@@ -22,7 +22,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
       { title: "Settings — Sona" },
       { name: "description", content: "Age modes, care profile and your Sona helper." },
       { property: "og:title", content: "Settings — Sona" },
-      { property: "og:description", content: "Sprout, Bloom or Open, plus your care profile." },
+      { property: "og:description", content: "Sapling, Sprout or Bloom, plus your care profile." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -42,7 +42,7 @@ function Settings() {
   const [pending, setPending] = useState<AgeMode | null>(null);
   const [code, setCode] = useState("");
   const [changingCode, setChangingCode] = useState(false);
-  const locked = profile.ageMode === "sprout" && !!profile.passcodeHash;
+  const locked = profile.ageMode === "sapling" && !!profile.passcodeHash;
 
   function pickAge(m: AgeMode) {
     if (m === profile.ageMode) return;
@@ -220,8 +220,8 @@ function Settings() {
           <h2 className="heading-calm flex items-center gap-3 text-3xl">
             Family Center <ShieldCheck className="size-6 text-care" />
           </h2>
-          {profile.ageMode !== "sprout" ? (
-            <p className="subline mt-1 text-sm">Family Center is for Sprout accounts (under 13). Switch to Sprout to link a parent.</p>
+          {profile.ageMode !== "sapling" ? (
+            <p className="subline mt-1 text-sm">Family Center is for Sapling accounts (under 13). Switch to Sapling to link a parent.</p>
           ) : (
             <>
               <p className="subline mt-1 max-w-2xl text-sm">
@@ -274,7 +274,7 @@ function Settings() {
       <PasscodeDialog
         open={pending !== null}
         onOpenChange={(o) => !o && setPending(null)}
-        title="Leaving Sprout"
+        title="Leaving Sapling"
         description="A parent needs to enter the Family Center passcode to change the age mode."
         onVerified={() => {
           if (pending) update({ ageMode: pending }, { immediate: true });

@@ -17,7 +17,7 @@ export const Route = createFileRoute("/_authenticated/parent")({
   head: () => ({
     meta: [
       { title: "Parent View — Sona" },
-      { name: "description", content: "Passcode-protected protection check and weekly summary for Sprout accounts." },
+      { name: "description", content: "Passcode-protected protection check and weekly summary for Sapling accounts." },
       { property: "og:title", content: "Parent View — Sona" },
       { property: "og:description", content: "See that protections work — without seeing your child's posts or messages." },
       { property: "og:type", content: "website" },
@@ -35,12 +35,12 @@ function Parent() {
   const { profile } = useSona();
   const [unlocked, setUnlocked] = useState(false);
 
-  if (profile.ageMode !== "sprout" || !profile.passcodeHash) {
+  if (profile.ageMode !== "sapling" || !profile.passcodeHash) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
         <SonaFigure pose="think" className="mx-auto w-24" />
         <h1 className="heading-calm mt-4 text-4xl">No parent linked yet</h1>
-        <p className="subline mt-2">Parent View works for Sprout accounts with a Family Center passcode.</p>
+        <p className="subline mt-2">Parent View works for Sapling accounts with a Family Center passcode.</p>
         <Button asChild variant="ink" className="mt-6">
           <Link to="/settings">Go to Family Center</Link>
         </Button>
@@ -77,7 +77,7 @@ function ParentDashboard({ onLock }: { onLock: () => void }) {
 
   return (
     <>
-      <PageHeader eyebrow="Family Center" title="Parent View" sub={`Watching over ${profile.displayName}'s Sprout account — protections, not private life.`}>
+      <PageHeader eyebrow="Family Center" title="Parent View" sub={`Watching over ${profile.displayName}'s Sapling account — protections, not private life.`}>
         <Button variant="pill" size="sm" onClick={onLock}>
           <Lock /> Lock
         </Button>

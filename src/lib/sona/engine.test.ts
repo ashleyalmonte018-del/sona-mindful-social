@@ -17,7 +17,7 @@ const base: FeedPrefs = {
   curate: { ...DEFAULT_SETTINGS.curate },
   guard: "balanced",
   vibe: { ...DEFAULT_SETTINGS.vibe },
-  ageMode: "bloom",
+  ageMode: "sprout",
   care: [],
 };
 
@@ -27,10 +27,10 @@ const post = (over: Partial<Post>): Post => ({
 });
 
 describe("finite edition size", () => {
-  it("is 8 for Sprout, 12 for Bloom, 15 for Open", () => {
-    expect(dailyLimit("sprout")).toBe(8);
-    expect(dailyLimit("bloom")).toBe(12);
-    expect(dailyLimit("open")).toBe(15);
+  it("is 8 for Sapling, 12 for Sprout, 15 for Bloom", () => {
+    expect(dailyLimit("sapling")).toBe(8);
+    expect(dailyLimit("sprout")).toBe(12);
+    expect(dailyLimit("bloom")).toBe(15);
   });
 
   it("never returns more visible posts than the limit", () => {
@@ -57,13 +57,13 @@ describe("guard levels", () => {
 
 describe("care profile topic floors", () => {
   it("eating disorder locks Body & looks to hold even if the user picks let in", () => {
-    const c = effectiveCurate({ ...base.curate, body: "show", food: "show" }, "bloom", ["eating"]);
+    const c = effectiveCurate({ ...base.curate, body: "show", food: "show" }, "sprout", ["eating"]);
     expect(c.body).toBe("hold");
     expect(c.food).toBe("soften");
   });
 
   it("anxiety locks News to hold and caps the World dial at 20", () => {
-    const c = effectiveCurate({ ...base.curate, news: "show" }, "bloom", ["anxiety"]);
+    const c = effectiveCurate({ ...base.curate, news: "show" }, "sprout", ["anxiety"]);
     expect(c.news).toBe("hold");
     expect(effectiveDials({ ...base.vibe, world: 100 }, ["anxiety"]).world).toBe(20);
   });
@@ -75,13 +75,13 @@ describe("care profile topic floors", () => {
   });
 });
 
-describe("sprout mode", () => {
+describe("sapling mode", () => {
   it("hard-blocks drama even when the user sets it to let in", () => {
-    const c = effectiveCurate({ ...base.curate, drama: "show" }, "sprout", []);
+    const c = effectiveCurate({ ...base.curate, drama: "show" }, "sapling", []);
     expect(c.drama).toBe("hold");
   });
   it("removes reels from the edition", () => {
-    const e = buildEdition(POSTS, { ...base, ageMode: "sprout" });
+    const e = buildEdition(POSTS, { ...base, ageMode: "sapling" });
     expect(e.posts.some((p) => p.post.category === "reels")).toBe(false);
   });
 });
@@ -116,7 +116,7 @@ describe("label only", () => {
     expect(j.verdict).toBe("label");
   });
   it("care floors still override label only", () => {
-    const c = effectiveCurate({ ...base.curate, body: "label" }, "bloom", ["eating"]);
+    const c = effectiveCurate({ ...base.curate, body: "label" }, "sprout", ["eating"]);
     expect(c.body).toBe("hold");
   });
 });
