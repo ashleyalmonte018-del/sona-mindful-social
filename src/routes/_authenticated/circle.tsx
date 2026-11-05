@@ -359,6 +359,7 @@ function CircleSidePanel({
   const inZone = (id: string) => zone.includes(id);
   const setZone = (id: string, on: boolean) =>
     update({ settings: { zone: on ? [...zone, id] : zone.filter((z) => z !== id) } });
+  const setAllZone = (ids: string[]) => update({ settings: { zone: ids } });
 
   return (
     <aside aria-label="Circle controls" className="space-y-4 lg:sticky lg:top-24 lg:self-start">
@@ -383,7 +384,7 @@ function CircleSidePanel({
       </section>
 
             <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
-        <h2 className="heading-calm text-2xl">Your Zone</h2>
+              <h2 className="heading-calm sparkle text-2xl">Your Zone</h2>
         <p className="subline text-sm">Pick whose Sonas visit your pocket world.</p>
         {members.length === 0 ? (
           <div className="mt-3 rounded-2xl bg-secondary p-4 text-sm">
@@ -400,11 +401,29 @@ function CircleSidePanel({
                     <Label htmlFor={id} className="cursor-pointer truncate font-normal text-sm">{m.name}</Label>
                     {m.handle && <p className="truncate text-xs text-muted-foreground">@{m.handle}</p>}
                   </div>
-                  {inZone(m.id) && <span className="text-xs text-muted-foreground">In your Zone</span>}
+{inZone(m.id) && (
+  <span className="text-xs text-muted-foreground" aria-live="polite">
+    In your Zone
+  </span>
+)}
                 </li>
               );
             })}
           </ul>
+                      <div className="mt-3 flex gap-2" role="group" aria-label="Zone quick actions">
+              <Button
+                variant="soft"
+                size="sm"
+                disabled={zone.length === members.length}
+                onClick={() => setAllZone(members.map((m) => m.id))}
+              >
+                Add everyone
+              </Button>
+              <Button variant="ghost" size="sm" disabled={zone.length === 0} onClick={() => setAllZone([])}>
+                Clear
+              </Button>
+            </div>
+
         )}
       </section>
 
@@ -469,7 +488,7 @@ function MemberRow({ member, tiers, onToggle }: { member: CircleMember; tiers: T
       </Link>
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{member.name}</p>
-        <p className="truncate text-xs text-muted-foreground">{tiers.length ? tiers.map(tierLabel).join(" · ") : "No tier yet"}</p>
+        <p className="truncate text-xs text-muted-foreground">{tiers.length ? tiers.map(tierLabel).join(" · ") : "Not sorted yet"}</p>
       </div>
       <Popover>
         <PopoverTrigger asChild>

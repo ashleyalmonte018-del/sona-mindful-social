@@ -158,7 +158,7 @@
   --glow-1: var(--lime);
   --glow-2: oklch(0.88 0.09 170);
   --glow-strength: 45%;
-  --grain-opacity: 0.035;
+  --grain-opacity: 0.040;
 
   --gradient-glow: radial-gradient(ellipse 55% 60% at 35% 0%, color-mix(in oklab, var(--glow-1) 85%, transparent) 0%, color-mix(in oklab, var(--glow-1) 30%, transparent) 45%, transparent 75%),
     radial-gradient(ellipse 45% 55% at 85% 15%, color-mix(in oklab, var(--glow-2) 70%, transparent) 0%, transparent 70%);
@@ -287,7 +287,7 @@ html.dark {
   font-family: var(--font-display);
   font-weight: 300;
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.05em;
   line-height: 0.95;
 }
 
@@ -425,6 +425,37 @@ html.dark {
   .animate-hop,
   .animate-wiggle,
   .animate-breathe {
+    animation: none;
+  }
+}
+@keyframes sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.8) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(20deg);
+  }
+}
+
+/* Small twinkling star that hangs off the top-right of any heading. */
+@utility sparkle {
+  position: relative;
+  &::after {
+    content: "✦";
+    position: absolute;
+    top: -0.35em;
+    right: -0.6em;
+    font-size: 0.45em;
+    color: var(--color-lime);
+    animation: sparkle-twinkle 2.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sparkle::after {
     animation: none;
   }
 }
