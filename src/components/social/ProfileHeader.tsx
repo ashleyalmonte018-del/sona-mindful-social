@@ -46,7 +46,8 @@ export function ProfileHeader({
         {bannerPath && banner.data && <img src={banner.data} alt="" className="absolute inset-0 size-full object-cover" />}
       </div>
       <div className="px-6 pb-6 md:px-8">
-        <div className="-mt-12 flex flex-wrap items-end justify-between gap-4">
+        {/* relative + z-10 so the picture bubble sits on the layer above the (positioned) banner. */}
+        <div className="relative z-10 -mt-12 flex flex-wrap items-end justify-between gap-4">
           <div className="rounded-full p-1" style={{ background: accent }}>
             <PersonAvatar path={avatarPath} sona={sona} name={name} className="size-24 border-4 border-card md:size-28" />
           </div>

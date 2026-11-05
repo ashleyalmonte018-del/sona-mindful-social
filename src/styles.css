@@ -154,20 +154,116 @@
   --dial-7: oklch(0.72 0.15 50);
   --dial-8: oklch(0.55 0.08 270);
 
-  --gradient-glow: radial-gradient(
-    ellipse 55% 60% at 50% 0%,
-    color-mix(in oklab, var(--lime) 85%, transparent) 0%,
-    color-mix(in oklab, var(--lime) 35%, transparent) 45%,
-    transparent 75%
-  );
-  --gradient-glow-soft: radial-gradient(
-    ellipse 70% 50% at 50% 0%,
-    color-mix(in oklab, var(--lime) 45%, transparent) 0%,
-    transparent 70%
-  );
+  /* Two-stop theme gradient: glow-1 is the theme colour, glow-2 its companion. */
+  --glow-1: var(--lime);
+  --glow-2: oklch(0.88 0.09 170);
+  --glow-strength: 45%;
+  --grain-opacity: 0.035;
+
+  --gradient-glow: radial-gradient(ellipse 55% 60% at 35% 0%, color-mix(in oklab, var(--glow-1) 85%, transparent) 0%, color-mix(in oklab, var(--glow-1) 30%, transparent) 45%, transparent 75%),
+    radial-gradient(ellipse 45% 55% at 85% 15%, color-mix(in oklab, var(--glow-2) 70%, transparent) 0%, transparent 70%);
+  --gradient-glow-soft: radial-gradient(ellipse 60% 45% at 20% 0%, color-mix(in oklab, var(--glow-1) var(--glow-strength), transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 45% at 90% 8%, color-mix(in oklab, var(--glow-2) var(--glow-strength), transparent) 0%, transparent 70%),
+    radial-gradient(ellipse 70% 40% at 60% 100%, color-mix(in oklab, var(--glow-2) 18%, transparent) 0%, transparent 70%);
   --shadow-soft: 0 1px 2px color-mix(in oklab, var(--ink) 6%, transparent),
     0 12px 32px -18px color-mix(in oklab, var(--ink) 25%, transparent);
   --shadow-float: 0 18px 40px -20px color-mix(in oklab, var(--ink) 35%, transparent);
+}
+
+/* ---------- Gradient theme presets (light mode) ---------- */
+
+[data-theme="lavender"] {
+  --background: oklch(0.962 0.012 305);
+  --card: oklch(0.984 0.007 305);
+  --popover: oklch(0.99 0.005 305);
+  --secondary: oklch(0.935 0.012 305);
+  --muted: oklch(0.935 0.012 305);
+  --accent: oklch(0.93 0.04 305);
+  --accent-foreground: oklch(0.25 0.06 305);
+  --lime: oklch(0.8 0.1 305);
+  --lime-soft: oklch(0.91 0.05 305);
+  --lime-foreground: oklch(0.22 0.06 305);
+  --ring: oklch(0.72 0.12 305);
+  --glow-2: oklch(0.86 0.08 355);
+}
+
+[data-theme="dusk"] {
+  --background: oklch(0.958 0.012 255);
+  --card: oklch(0.983 0.006 255);
+  --popover: oklch(0.99 0.004 255);
+  --secondary: oklch(0.932 0.012 255);
+  --muted: oklch(0.932 0.012 255);
+  --accent: oklch(0.92 0.04 255);
+  --accent-foreground: oklch(0.24 0.06 255);
+  --lime: oklch(0.78 0.09 258);
+  --lime-soft: oklch(0.9 0.045 258);
+  --lime-foreground: oklch(0.2 0.06 258);
+  --ring: oklch(0.68 0.11 258);
+  --glow-2: oklch(0.87 0.07 55);
+}
+
+[data-theme="cream"] {
+  --background: oklch(0.965 0.017 85);
+  --card: oklch(0.985 0.011 85);
+  --popover: oklch(0.99 0.008 85);
+  --secondary: oklch(0.935 0.018 80);
+  --muted: oklch(0.935 0.018 80);
+  --accent: oklch(0.93 0.05 80);
+  --accent-foreground: oklch(0.28 0.06 60);
+  --lime: oklch(0.86 0.1 78);
+  --lime-soft: oklch(0.93 0.05 80);
+  --lime-foreground: oklch(0.27 0.06 60);
+  --ring: oklch(0.76 0.12 70);
+  --glow-2: oklch(0.85 0.08 35);
+}
+
+/* ---------- Nightfall dark mode: deep teal-navy with a warm amber glow ---------- */
+
+html.dark {
+  --background: oklch(0.2 0.035 228);
+  --foreground: oklch(0.94 0.02 85);
+  --card: oklch(0.245 0.036 226);
+  --card-foreground: oklch(0.94 0.02 85);
+  --popover: oklch(0.25 0.036 226);
+  --popover-foreground: oklch(0.94 0.02 85);
+  --primary: oklch(0.92 0.03 85);
+  --primary-foreground: oklch(0.2 0.035 228);
+  --secondary: oklch(0.29 0.033 226);
+  --secondary-foreground: oklch(0.94 0.02 85);
+  --muted: oklch(0.29 0.033 226);
+  --muted-foreground: oklch(0.74 0.025 215);
+  --accent: oklch(0.34 0.06 65);
+  --accent-foreground: oklch(0.95 0.04 80);
+  --destructive: oklch(0.64 0.19 25);
+  --border: oklch(0.34 0.03 226);
+  --input: oklch(0.4 0.03 226);
+  --ring: oklch(0.8 0.13 70);
+  --sidebar: oklch(0.23 0.035 228);
+  --sidebar-foreground: oklch(0.94 0.02 85);
+  --sidebar-primary: oklch(0.8 0.13 70);
+  --sidebar-primary-foreground: oklch(0.2 0.04 60);
+  --sidebar-accent: oklch(0.29 0.033 226);
+  --sidebar-accent-foreground: oklch(0.94 0.02 85);
+  --sidebar-border: oklch(0.34 0.03 226);
+  --sidebar-ring: oklch(0.8 0.13 70);
+
+  --lime: oklch(0.8 0.13 70);
+  --lime-soft: oklch(0.31 0.05 198);
+  --lime-foreground: oklch(0.2 0.04 60);
+  --ink: oklch(0.92 0.03 85);
+  --ink-foreground: oklch(0.2 0.035 228);
+  --sona-line: oklch(0.5 0.015 240);
+  --prop-brown: oklch(0.58 0.07 65);
+  --care: oklch(0.74 0.1 175);
+  --care-soft: oklch(0.3 0.05 190);
+  --doodle-paper: oklch(0.27 0.035 226);
+
+  --glow-1: oklch(0.72 0.15 60);
+  --glow-2: oklch(0.5 0.08 205);
+  --glow-strength: 38%;
+  --grain-opacity: 0.09;
+  --shadow-soft: 0 1px 2px oklch(0 0 0 / 0.25), 0 12px 32px -18px oklch(0 0 0 / 0.6);
+  --shadow-float: 0 18px 40px -20px oklch(0 0 0 / 0.7);
 }
 
 @layer base {
@@ -215,6 +311,22 @@
 
 @utility bg-glow-soft {
   background-image: var(--gradient-glow-soft);
+  background-attachment: fixed;
+}
+
+/* Fine film grain over the page gradient (stronger in dark mode). */
+@utility bg-grain {
+  position: relative;
+  isolation: isolate;
+  &::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
 }
 
 @utility shadow-soft {

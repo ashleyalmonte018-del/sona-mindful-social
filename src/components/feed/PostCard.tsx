@@ -138,7 +138,7 @@ export function PostCard({
       </div>
 
       {post.offline && revealed && (
-        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-lime-soft px-3 py-1.5 text-sm text-lime-foreground">
+        <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-lime-soft px-3 py-1.5 text-sm text-foreground">
           <Sprout className="size-4" /> Try it offline: {post.offline}
         </p>
       )}

@@ -1,5 +1,7 @@
 // Core Sona domain types + defaults. Pure data, safe for server and browser.
 
+import { DEFAULT_THEME, normalizeTheme, type ThemeChoice } from "./theme";
+
 export const TOPICS = [
   { id: "body", label: "Body & looks", hint: "Glow-ups, appearance, comparisons" },
   { id: "food", label: "Food & diet", hint: "Recipes, meal content, diet talk" },
@@ -82,27 +84,31 @@ export type MoodId = (typeof MOODS)[number]["id"];
 export const moodColor = (id: string) => MOODS.find((m) => m.id === id)?.color ?? "var(--mood-bored)";
 export const moodLabel = (id: string) => MOODS.find((m) => m.id === id)?.label ?? id;
 
-export type AgeMode = "sprout" | "bloom" | "open";
+export type AgeMode = "sapling" | "sprout" | "bloom";
 export const AGE_MODES: { id: AgeMode; label: string; who: string; blurb: string }[] = [
   {
-    id: "sprout",
-    label: "Sprout",
+    id: "sapling",
+    label: "Sapling",
     who: "Under 13",
     blurb: "Hard blocks on heavy topics, strict guard, an 8-post edition and no reels.",
   },
   {
-    id: "bloom",
-    label: "Bloom",
-    who: "13 – 17",
+    id: "sprout",
+    label: "Sprout",
+    who: "Teens · 13 – 17",
     blurb: "Balanced guard by default and a 12-post edition. You tune the rest.",
   },
   {
-    id: "open",
-    label: "Open",
+    id: "bloom",
+    label: "Bloom",
     who: "18+",
     blurb: "Full control over every filter with a 15-post edition.",
   },
 ];
+export const DEFAULT_AGE_MODE: AgeMode = "sprout";
+export function normalizeAgeMode(raw: unknown): AgeMode {
+  return AGE_MODES.some((m) => m.id === raw) ? (raw as AgeMode) : DEFAULT_AGE_MODE;
+}
 
 export type CareCondition = "anxiety" | "depression" | "eating" | "asd" | "adhd";
 
@@ -224,6 +230,8 @@ export interface SonaSettings {
   timeLimit: number;
   /** How trigger labels on people's posts look to you: big and hard to miss, or small but visible. */
   labelStyle: "loud" | "quiet";
+  /** Site colours: a gradient preset or custom colour, plus light/dark mode. */
+  theme: ThemeChoice;
 }
 
 export const DEFAULT_SETTINGS: SonaSettings = {
@@ -250,6 +258,7 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   accountability: false,
   timeLimit: 45,
   labelStyle: "loud",
+  theme: DEFAULT_THEME,
 };
 
 export function mergeSettings(raw: unknown): SonaSettings {
@@ -260,6 +269,7 @@ export function mergeSettings(raw: unknown): SonaSettings {
     curate: { ...DEFAULT_SETTINGS.curate, ...(s.curate ?? {}) },
     vibe: { ...DEFAULT_SETTINGS.vibe, ...(s.vibe ?? {}) },
     share: { ...DEFAULT_SETTINGS.share, ...(s.share ?? {}) },
+    theme: normalizeTheme(s.theme),
   };
 }
 

@@ -65,18 +65,18 @@ const maxFilter = (a: Filter, b: Filter): Filter => (FILTER_RANK[a] >= FILTER_RA
 
 // ---------- Age modes ----------
 
-export const SPROUT_HARD_BLOCKS: TopicId[] = ["body", "news", "drama", "romance", "hustle"];
+export const SAPLING_HARD_BLOCKS: TopicId[] = ["body", "news", "drama", "romance", "hustle"];
 
 export function dailyLimit(ageMode: AgeMode): number {
-  return ageMode === "sprout" ? 8 : ageMode === "open" ? 15 : 12;
+  return ageMode === "sapling" ? 8 : ageMode === "bloom" ? 15 : 12;
 }
 
 export function effectiveGuard(ageMode: AgeMode, guard: GuardLevel): GuardLevel {
-  return ageMode === "sprout" ? "strict" : guard;
+  return ageMode === "sapling" ? "strict" : guard;
 }
 
 export function categoriesFor(ageMode: AgeMode): PostCategory[] {
-  return ageMode === "sprout"
+  return ageMode === "sapling"
     ? ["inspiration", "learning", "friends"]
     : ["inspiration", "learning", "friends", "reels"];
 }
@@ -101,13 +101,13 @@ export function topicFloors(ageMode: AgeMode, care: CareCondition[]): Record<Top
       out[topic].sources.push(rule.label);
     }
   }
-  if (ageMode === "sprout") {
-    for (const t of SPROUT_HARD_BLOCKS) {
+  if (ageMode === "sapling") {
+    for (const t of SAPLING_HARD_BLOCKS) {
       out[t].floor = "hold";
-      out[t].sources.push("Sprout mode");
+      out[t].sources.push("Sapling mode");
     }
     out.mental.floor = maxFilter(out.mental.floor, "soften");
-    out.mental.sources.push("Sprout mode");
+    out.mental.sources.push("Sapling mode");
   }
   return out;
 }
@@ -182,10 +182,10 @@ export function judgePost(post: Post, prefs: FeedPrefs): Judged {
     if (f !== "show") {
       const fromFloor = FILTER_RANK[floors[t].floor] >= FILTER_RANK[f] && floors[t].floor !== "show";
       reasons.push({
-        kind: fromFloor ? (floors[t].sources.includes("Sprout mode") ? "age" : "care") : "topic",
+        kind: fromFloor ? (floors[t].sources.includes("Sapling mode") ? "age" : "care") : "topic",
         text: `${topicLabel(t)} is set to ${FILTER_WORD[f]}${fromFloor ? ` (locked by ${floors[t].sources.join(", ")})` : ""}.`,
       });
-      if (fromFloor && !floors[t].sources.every((s) => s === "Sprout mode")) careFlag = true;
+      if (fromFloor && !floors[t].sources.every((s) => s === "Sapling mode")) careFlag = true;
       flags.push(topicLabel(t));
       verdict = maxFilter(verdict, f);
     }
@@ -210,12 +210,12 @@ export function judgePost(post: Post, prefs: FeedPrefs): Judged {
     reasons.push({ kind: "ai", text: "Made with AI — you turned off all AI-generated content." });
   }
 
-  // 3. Guard level (Sprout forces strict)
+  // 3. Guard level (Sapling forces strict)
   const guard = effectiveGuard(prefs.ageMode, prefs.guard);
   const g = guardVerdict(post.intensity, guard);
   if (g !== "show") {
     reasons.push({
-      kind: prefs.ageMode === "sprout" ? "age" : "guard",
+      kind: prefs.ageMode === "sapling" ? "age" : "guard",
       text: `Intensity ${post.intensity}/3 meets your ${guard} guard → ${g === "hold" ? "held back" : "softened"}.`,
     });
     if (!flags.length) flags.push("intense");

@@ -390,7 +390,7 @@ function CaughtUp({ offline, onRefresh, look }: { offline: string[]; onRefresh: 
         )}
         <div className="mt-8 flex flex-wrap justify-center gap-2">
           <Button asChild variant="ink">
-            <Link to="/zone">Visit the Zone</Link>
+            <Link to="/circle">Visit your Circle</Link>
           </Button>
           <Button variant="pill" onClick={onRefresh}>
             Check for a new edition

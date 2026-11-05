@@ -58,16 +58,16 @@ function Curate() {
       <section>
         <h2 className="heading-calm text-3xl">Guard level</h2>
         <p className="subline">How intense a post can be before it's softened or held.</p>
-        {profile.ageMode === "sprout" && (
+        {profile.ageMode === "sapling" && (
           <p className="mt-3 inline-flex items-center gap-2 rounded-full bg-care-soft px-3 py-1.5 text-sm text-care">
-            <Lock className="size-3.5" /> Sprout mode keeps the guard on Strict.
+            <Lock className="size-3.5" /> Sapling mode keeps the guard on Strict.
           </p>
         )}
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           {GUARD_LEVELS.map((g) => {
             const c = counts[g.id]!;
             const active = guard === g.id;
-            const disabled = profile.ageMode === "sprout" && g.id !== "strict";
+            const disabled = profile.ageMode === "sapling" && g.id !== "strict";
             return (
               <button
                 key={g.id}
@@ -106,7 +106,7 @@ function Curate() {
             const floor = floors[t.id];
             const value: Filter = FILTER_RANK[profile.settings.curate[t.id]] >= FILTER_RANK[floor.floor] ? profile.settings.curate[t.id] : floor.floor;
             const locked = floor.floor !== "show";
-            const isCare = floor.sources.some((s) => s !== "Sprout mode");
+            const isCare = floor.sources.some((s) => s !== "Sapling mode");
             return (
               <li key={t.id} className={cn("rounded-[1.75rem] border bg-card p-5", isCare ? "border-care/40" : "border-border")}>
                 <div className="flex items-start justify-between gap-2">
@@ -123,7 +123,7 @@ function Curate() {
                       title={`Locked by ${floor.sources.join(", ")}`}
                     >
                       {isCare ? <HeartHandshake className="size-3" /> : <Lock className="size-3" />}
-                      {isCare ? "care" : "sprout"} · {floor.sources.join(", ")}
+                      {isCare ? "care" : "sapling"} · {floor.sources.join(", ")}
                     </span>
                   )}
                 </div>

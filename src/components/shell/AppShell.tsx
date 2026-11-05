@@ -11,12 +11,12 @@ import { SonaProvider } from "@/components/shell/SonaContext";
 import { useSonaProfile } from "@/hooks/use-sona-profile";
 import { useFollowRequests } from "@/hooks/use-social";
 import { supabase } from "@/integrations/supabase/client";
+import { applyTheme, DEFAULT_THEME } from "@/lib/sona/theme";
 import { useActiveTime } from "@/lib/sona/usage";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { to: "/feed", label: "Feed" },
-  { to: "/zone", label: "Zone" },
   { to: "/studio", label: "Studio" },
   { to: "/curate", label: "Curate" },
   { to: "/vibe", label: "Vibe" },
@@ -59,13 +59,20 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   );
 
 
+  // Keep <html> in sync with the saved theme (preset / custom colour / dark mode).
+  const theme = profile?.settings.theme;
+  useEffect(() => {
+    if (theme) applyTheme(theme);
+  }, [theme]);
+
   async function signOut() {
+    applyTheme(DEFAULT_THEME);
     await supabase.auth.signOut();
     navigate({ to: "/" });
   }
 
   return (
-    <div className="min-h-screen bg-background bg-glow-soft">
+    <div className="min-h-screen bg-background bg-glow-soft bg-grain">
       <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 md:px-6">
           <Link to="/feed" className="heading-calm shrink-0 text-2xl tracking-wide">
