@@ -92,6 +92,7 @@ function Profile() {
   return (
     <div className="space-y-6">
       <ProfileHeader
+        profileId={profile.id}
         name={profile.displayName}
         handle={profile.handle}
         bio={profile.bio || null}

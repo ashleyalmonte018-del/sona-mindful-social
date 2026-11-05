@@ -58,6 +58,7 @@ function Person() {
   return (
     <div className="space-y-6">
       <ProfileHeader
+      profileId={c.id}
         name={c.display_name}
         handle={c.handle}
         bio={c.bio}
