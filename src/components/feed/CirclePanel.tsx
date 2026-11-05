@@ -51,7 +51,7 @@ export function CirclePanel({ limit = 4 }: { limit?: number }) {
           ))}
         </ul>
       )}
-      {!quiet && sample && <p className="mt-3 text-xs text-muted-foreground">Sample circle — follow each other with someone to see them here.</p>}
+      {!quiet && sample && <p className="mt-3 text-xs text-muted-foreground">No one here yet — when you follow each other, they'll show up here.</p>}
     </section>
   );
 }
