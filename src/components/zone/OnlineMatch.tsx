@@ -21,7 +21,7 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
 
   useEffect(() => {
     if (!match) return;
-    const channel = supabase.channel(`match:${match.id}`).on("postgres_changes", { event: "UPDATE", schema: "public", table: "match_sessions", filter: `id=eq.${match.id}` }, (payload) => setMatch(payload.new as Match)).subscribe();
+    const channel = supabase.channel(`match:${match.id}:${crypto.randomUUID()}`).on("postgres_changes", { event: "UPDATE", schema: "public", table: "match_sessions", filter: `id=eq.${match.id}` }, (payload) => setMatch(payload.new as Match)).subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [match?.id]);
 
@@ -49,7 +49,7 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
       setInvites((data ?? []) as Match[]);
     };
     void load();
-    const channel = supabase.channel(`match-invites:${myId}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, (payload) => setInvites((old) => [payload.new as Match, ...old])).subscribe();
+    const channel = supabase.channel(`match-invites:${myId}:${crypto.randomUUID()}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, (payload) => setInvites((old) => [payload.new as Match, ...old])).subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [myId]);
 
