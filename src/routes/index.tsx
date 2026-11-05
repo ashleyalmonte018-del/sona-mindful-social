@@ -28,7 +28,7 @@ const FEATURES = [
   { title: "Curate", line: "decide what gets through" },
   { title: "Vibe", line: "dials, not guesswork" },
   { title: "Circle", line: "share just enough" },
-  { title: "Zone", line: "play with your Sona" },
+  { title: "Minigames", line: "play with your circle's Sonas" },
 ];
 
 function Landing() {
