@@ -94,6 +94,13 @@ export function ProfileHeader({
           )}
         </dl>
       </div>
+      <FollowersDialog                        {/* ← paste this block here */}
+        ownerId={profileId}
+        ownerName={name}
+        open={followersOpen}
+        onOpenChange={setFollowersOpen}
+      />
+    </section>
     </section>
   );
 }
