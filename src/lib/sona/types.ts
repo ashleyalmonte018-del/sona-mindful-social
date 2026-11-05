@@ -251,7 +251,7 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   allowInteractions: true,
   quietMode: false,
   checkIns: true,
-  share: { song: "Pink + White", artist: "Frank Ocean", mood: "calm" },
+  share: { song: "", artist: "", mood: "calm" },
   boosts: [],
   aiLabels: true,
   blockAI: false,
