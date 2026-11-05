@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, HeartHandshake, ShieldCheck } from "lucide-react";
+import { Check, HeartHandshake, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,6 +16,7 @@ import { hashPasscode } from "@/hooks/use-sona-profile";
 import { CARE_RULES, CRISIS_LINKS } from "@/lib/sona/care";
 import { AGE_MODES, type AgeMode, type CareCondition } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
@@ -43,6 +44,10 @@ function Settings() {
   const [pending, setPending] = useState<AgeMode | null>(null);
   const [code, setCode] = useState("");
   const [changingCode, setChangingCode] = useState(false);
+  const [accountEmail, setAccountEmail] = useState(profile.email ?? "");
+  const [emailBusy, setEmailBusy] = useState(false);
+  const [emailSent, setEmailSent] = useState(false);
+  const [passwordBusy, setPasswordBusy] = useState(false);
   const locked = profile.ageMode === "sapling" && !!profile.passcodeHash;
 
   function pickAge(m: AgeMode) {
@@ -65,6 +70,45 @@ function Settings() {
   function toggleCare(c: CareCondition) {
     const next = profile.care.includes(c) ? profile.care.filter((x) => x !== c) : [...profile.care, c];
     update({ care: next }, { immediate: true });
+  }
+
+  async function changeEmail(e: FormEvent) {
+    e.preventDefault();
+    const nextEmail = accountEmail.trim();
+    if (!nextEmail || nextEmail === profile.email) {
+      toast.error("Enter a different email address.");
+      return;
+    }
+    setEmailBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ email: nextEmail });
+      if (error) throw error;
+      setEmailSent(true);
+      toast.success("Check your inbox to confirm the new email.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not change your email");
+    } finally {
+      setEmailBusy(false);
+    }
+  }
+
+  async function sendPasswordReset() {
+    if (!profile.email) {
+      toast.error("There is no email address on this account.");
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(profile.email, {
+        redirectTo: `${window.location.origin}/auth?mode=reset`,
+      });
+      if (error) throw error;
+      toast.success("Check your inbox to change your password.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not send the password email");
+    } finally {
+      setPasswordBusy(false);
+    }
   }
 
   return (
@@ -93,6 +137,23 @@ function Settings() {
               Save
             </Button>
           </form>
+        </section>
+
+        <section className="rounded-[2rem] border border-border bg-card p-6 shadow-soft">
+          <h2 className="heading-calm flex items-center gap-3 text-3xl">Account security <KeyRound className="size-6 text-care" /></h2>
+          <p className="subline mt-1">Email changes and password changes are confirmed through your inbox.</p>
+          <form onSubmit={changeEmail} className="mt-5 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div className="space-y-1.5">
+              <Label htmlFor="account-email"><span className="inline-flex items-center gap-1.5"><Mail className="size-4" /> Email address</span></Label>
+              <Input id="account-email" type="email" required value={accountEmail} onChange={(e) => { setAccountEmail(e.target.value); setEmailSent(false); }} className="rounded-full" />
+            </div>
+            <Button type="submit" variant="ink" disabled={emailBusy}>{emailBusy ? "Sending…" : "Change email"}</Button>
+          </form>
+          {emailSent && <p className="mt-2 text-sm text-care">Check the new inbox and follow the verification link to finish changing your email.</p>}
+          <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-border pt-5">
+            <Button type="button" variant="outline" onClick={() => void sendPasswordReset()} disabled={passwordBusy}>{passwordBusy ? "Sending…" : "Change password"}</Button>
+            <span className="text-sm text-muted-foreground">We’ll email you a secure link to choose a new password.</span>
+          </div>
         </section>
 
         <ThemePicker />
