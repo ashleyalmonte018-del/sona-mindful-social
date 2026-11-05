@@ -232,6 +232,7 @@ export interface SonaSettings {
   labelStyle: "loud" | "quiet";
   /** Site colours: a gradient preset or custom colour, plus light/dark mode. */
   theme: ThemeChoice;
+  zone: string[];
 }
 
 export const DEFAULT_SETTINGS: SonaSettings = {
@@ -259,6 +260,7 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   timeLimit: 45,
   labelStyle: "loud",
   theme: DEFAULT_THEME,
+  zone: [],
 };
 
 export function mergeSettings(raw: unknown): SonaSettings {
