@@ -356,6 +356,10 @@ function CircleSidePanel({
   const s = profile.settings;
   const counts = tierCounts(tiers.byMember);
   const listed = filterByTier(members, tiers.byMember, tierFilter);
+    const zone = s.zone ?? [];
+  const inZone = (id: string) => zone.includes(id);
+  const setZone = (id: string, on: boolean) =>
+    update({ settings: { zone: on ? [...zone, id] : zone.filter((z) => z !== id) } });
 
   return (
     <aside aria-label="Circle controls" className="space-y-4 lg:sticky lg:top-24 lg:self-start">
