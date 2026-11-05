@@ -247,3 +247,14 @@ export const fileExt = (f: File, fallback: string) => {
   const fromName = f.name.split(".").pop()?.toLowerCase();
   return fromName && /^[a-z0-9]{2,5}$/.test(fromName) ? fromName : fallback;
 };
+export function useFollowers(ownerId: string | undefined, enabled = true) {
+  return useQuery({
+    queryKey: ["followers-list", ownerId],
+    enabled: Boolean(ownerId) && enabled,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("followers_list", { _owner: ownerId! });
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+}
