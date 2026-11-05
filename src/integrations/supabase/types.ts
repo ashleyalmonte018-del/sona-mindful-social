@@ -38,6 +38,12 @@ export type Database = {
         Update: { id?: string; game?: string; winner_id?: string | null; loser_id?: string | null; player_a_id?: string; player_b_id?: string; match_id?: string | null; created_at?: string }
         Relationships: []
       }
+      notifications: {
+        Row: { id: string; recipient_id: string; kind: string; title: string; body: string; match_id: string | null; read_at: string | null; created_at: string }
+        Insert: { id?: string; recipient_id: string; kind: string; title: string; body: string; match_id?: string | null; read_at?: string | null; created_at?: string }
+        Update: { id?: string; recipient_id?: string; kind?: string; title?: string; body?: string; match_id?: string | null; read_at?: string | null; created_at?: string }
+        Relationships: []
+      }
       circle_tier_members: {
         Row: {
           created_at: string

@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -36,6 +37,36 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     setCheckIn(true);
   }, []);
   const { minutesToday } = useActiveTime(openCheckIn, profile?.settings.checkIns ?? true);
+
+  // Turn notifications remain available after the game dialog is closed.
+  const turnNotifications = useQuery({
+    queryKey: ["game-turn-notifications", profile?.id],
+    enabled: Boolean(profile?.id),
+    refetchInterval: 15_000,
+    queryFn: async () => {
+      const { data, error } = await supabase.from("notifications").select("id,title,body,match_id,created_at").eq("recipient_id", profile!.id).eq("kind", "game_turn").is("read_at", null).order("created_at", { ascending: false }).limit(10);
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const notificationClient = useQueryClient();
+  const shownTurnNotifications = useRef(new Set<string>());
+  useEffect(() => {
+    if (!turnNotifications.data) return;
+    for (const notification of turnNotifications.data) {
+      if (shownTurnNotifications.current.has(notification.id)) continue;
+      shownTurnNotifications.current.add(notification.id);
+      toast(notification.title, { description: notification.body, action: { label: "Open Circle", onClick: () => navigate({ to: "/circle" }) } });
+      void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+    }
+  }, [turnNotifications.data, navigate]);
+  useEffect(() => {
+    if (!profile?.id) return;
+    const channel = supabase.channel(`game-notifications:${profile.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
+      void notificationClient.invalidateQueries({ queryKey: ["game-turn-notifications", profile.id] });
+    }).subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [profile?.id, notificationClient]);
 
   // Follow-request notifications: a badge on Profile, plus a gentle toast when a new one arrives.
   const requests = useFollowRequests(profile?.id, { poll: true });
