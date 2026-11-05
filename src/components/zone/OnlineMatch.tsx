@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,11 @@ import { cn } from "@/lib/utils";
 type Hand = "rock" | "paper" | "scissors";
 type Match = { id: string; game: string; host_id: string; guest_id: string | null; state: { board?: ("X" | "O" | null)[]; turn?: string; winner?: string | null; moves?: Record<string, Hand>; result?: string }; status: string };
 
-export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string; opponentId?: string; game?: "tic-tac-toe" | "rps"; onReady?: () => void }) {
+export function OnlineMatch({ myId, opponentId, game, fallback, onReady }: { myId: string; opponentId?: string; game?: "tic-tac-toe" | "rps"; fallback?: ReactNode; onReady?: () => void }) {
   const [match, setMatch] = useState<Match | null>(null);
   const [busy, setBusy] = useState(false);
   const [invites, setInvites] = useState<Match[]>([]);
+  const [databaseError, setDatabaseError] = useState(false);
   const board = match?.state.board ?? Array(9).fill(null);
   const mark = match?.host_id === myId ? "X" : "O";
   const winner = useMemo(() => {
@@ -33,7 +34,11 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
       try {
         const { data, error } = await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: { board: Array(9).fill(null), turn: myId, winner: null, moves: {} } }).select("*").single();
         if (!active) return;
-        if (error) toast.error(/match_sessions|schema cache|relation .* does not exist/i.test(error.message) ? "Games need one database update" : "Couldn't invite that Circle member", { description: error.message });
+        if (error) {
+          const missing = /match_sessions|schema cache|relation .* does not exist/i.test(error.message);
+          setDatabaseError(missing);
+          toast.error(missing ? "Games need one database update" : "Couldn't invite that Circle member", { description: error.message });
+        }
         else { setMatch(data as Match); onReady?.(); }
       } catch (error) {
         if (active) toast.error("Couldn't start that game", { description: error instanceof Error ? error.message : "Please try again." });
@@ -84,6 +89,6 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
     <h3 className="heading-calm text-2xl">Invitations</h3>
     {invites.length > 0 && <div className="mt-3 space-y-2">{invites.map((invite) => <div key={invite.id} className="flex items-center justify-between gap-3 rounded-2xl bg-secondary p-3 text-sm"><span>{invite.game === "rps" ? "Rock-Paper-Scissors" : "Tic-Tac-Toe"} invitation</span><Button size="sm" variant="ink" onClick={() => void accept(invite)} disabled={busy}>Play</Button></div>)}</div>}
     {match && <div className="mt-4">{match.status === "waiting" ? <p className="text-sm text-muted-foreground">Invitation sent — waiting for your Circle member.</p> : match.game === "rps" ? <><p className="text-sm">{match.state.result ? match.state.result === "draw" ? "Draw." : match.state.result === (match.host_id === myId ? "host" : "guest") ? "You win." : "Your friend wins." : "Choose your hand."}</p><div className="mt-3 flex gap-2">{(["rock", "paper", "scissors"] as Hand[]).map((h) => <Button key={h} variant="soft" onClick={() => void throwHand(h)} disabled={!!match.state.moves?.[myId] || match.status !== "active"}>{h}</Button>)}</div></> : <><p className="text-sm">{winner ? winner === "draw" ? "Draw." : `${winner === mark ? "You win" : "Your friend wins"}.` : match.state.turn === myId ? "Your turn." : "Their turn."}</p><div className="mt-3 grid max-w-xs grid-cols-3 overflow-hidden rounded-2xl border border-border">{board.map((v, i) => <button key={i} disabled={!!v || !!winner || match.state.turn !== myId} onClick={() => void play(i)} className={cn("aspect-square border border-border text-3xl font-doodle", v === "X" ? "text-doodle-red" : "text-doodle-blue")}>{v}</button>)}</div></>}</div>}
-    {!match && invites.length === 0 && <p className="mt-1 text-sm text-muted-foreground">Choose a Circle member above, then tap a game to invite them.</p>}
+    {!match && invites.length === 0 && (databaseError && fallback ? <div className="mt-4">{fallback}<p className="mt-3 rounded-2xl bg-care-soft p-3 text-xs text-care">Online play is waiting for the latest database migration. Practice mode is available below.</p></div> : <p className="mt-1 text-sm text-muted-foreground">Choose a Circle member above, then tap a game to invite them.</p>)}
   </section>;
 }

@@ -277,7 +277,7 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              {opponent === "practice" || !["ttt", "rps"].includes(game.id) ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id === "ttt" ? "tic-tac-toe" : "rps"} />}
+              {opponent === "practice" || !["ttt", "rps"].includes(game.id) ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id === "ttt" ? "tic-tac-toe" : "rps"} fallback={<game.C players={players} />} />}
             </>
           )}
         </DialogContent>
