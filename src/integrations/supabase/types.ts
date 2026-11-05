@@ -32,6 +32,12 @@ export type Database = {
         Update: { id?: string; match_id?: string; player_id?: string; move?: Json; created_at?: string }
         Relationships: []
       }
+      game_results: {
+        Row: { id: string; game: string; winner_id: string | null; loser_id: string | null; player_a_id: string; player_b_id: string; match_id: string | null; created_at: string }
+        Insert: { id?: string; game: string; winner_id?: string | null; loser_id?: string | null; player_a_id: string; player_b_id: string; match_id?: string | null; created_at?: string }
+        Update: { id?: string; game?: string; winner_id?: string | null; loser_id?: string | null; player_a_id?: string; player_b_id?: string; match_id?: string | null; created_at?: string }
+        Relationships: []
+      }
       circle_tier_members: {
         Row: {
           created_at: string
