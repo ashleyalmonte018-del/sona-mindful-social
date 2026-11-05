@@ -74,11 +74,14 @@ function CirclePage() {
   const tiers = useCircleTiers(profile.id);
   const [tierFilter, setTierFilter] = useState<TierId | "all">("all");
 
+  const zoneIds = s.zone ?? [];
   const visitors = useMemo(() => {
     if (!allow) return [];
-    const shown = usingSamples ? members : filterByTier(members, tiers.byMember, tierFilter);
-    return shown.filter((m) => m.allowsPlay).slice(0, MAX_VISITORS);
-  }, [allow, members, usingSamples, tiers.byMember, tierFilter]);
+    return members
+      .filter((m) => zoneIds.includes(m.id))
+      .filter((m) => m.allowsPlay)
+      .slice(0, MAX_VISITORS);
+  }, [allow, members, zoneIds]);
 
   const [buddies, setBuddies] = useState<Buddy[]>([]);
   const [selected, setSelected] = useState<string>("me");
