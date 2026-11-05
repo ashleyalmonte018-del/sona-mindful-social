@@ -224,7 +224,6 @@ function CirclePage() {
               {allow && usingSamples && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, and their Sona will appear here.</p>}
               {allow && !usingSamples && visitors.length === 0 && (
                 <p className="mt-3 text-xs text-muted-foreground">Your Zone is empty — pick who visits from the side panel.</p>)}
-              )}
             </>
           )}
 
