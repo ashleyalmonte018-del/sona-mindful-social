@@ -4,8 +4,6 @@ import { useState, type ReactNode } from "react";
 import { FollowersDialog } from "@/components/social/FollowersDialog";
 import { PersonAvatar } from "@/components/social/Avatar";
 
-
-import { PersonAvatar } from "@/components/social/Avatar";
 import { useSignedUrl } from "@/hooks/use-social";
 import type { Json } from "@/integrations/supabase/types";
 import { PRIVATE_HIDES, type PrivateHides } from "@/lib/sona/social";
