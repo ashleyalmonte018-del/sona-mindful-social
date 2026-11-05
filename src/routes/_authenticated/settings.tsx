@@ -11,6 +11,7 @@ import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { PasscodeDialog } from "@/components/family/PasscodeDialog";
+import { ThemePicker } from "@/components/shell/ThemePicker";
 import { hashPasscode } from "@/hooks/use-sona-profile";
 import { CARE_RULES, CRISIS_LINKS } from "@/lib/sona/care";
 import { AGE_MODES, type AgeMode, type CareCondition } from "@/lib/sona/types";
@@ -20,7 +21,7 @@ export const Route = createFileRoute("/_authenticated/settings")({
   head: () => ({
     meta: [
       { title: "Settings — Sona" },
-      { name: "description", content: "Age modes, care profile and your Sona helper." },
+      { name: "description", content: "Theme colours, dark mode, age modes, care profile and your Sona helper." },
       { property: "og:title", content: "Settings — Sona" },
       { property: "og:description", content: "Sapling, Sprout or Bloom, plus your care profile." },
       { property: "og:type", content: "website" },
@@ -93,6 +94,8 @@ function Settings() {
             </Button>
           </form>
         </section>
+
+        <ThemePicker />
 
         <section>
           <h2 className="heading-calm text-3xl">Age mode</h2>
@@ -167,7 +170,7 @@ function Settings() {
             <Row
               id="sona-play"
               label="Let other Sonas interact"
-              hint="Your circle's Sonas can visit you in the Zone and play minigames"
+              hint="Your circle's Sonas can visit you on the Circle page and play minigames"
               checked={s.allowInteractions}
               onChange={(v) => update({ settings: { allowInteractions: v } })}
             />
