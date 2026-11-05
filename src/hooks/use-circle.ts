@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { CIRCLE } from "@/lib/sona/circle";
 import { tiersByMember, type TierId } from "@/lib/sona/tiers";
 import { mergeLook, MOODS, type MoodId, type SonaLook } from "@/lib/sona/types";
 
@@ -23,19 +22,6 @@ export interface CircleMember {
 
 const asMood = (m: string | null): MoodId | null => (MOODS.some((x) => x.id === m) ? (m as MoodId) : null);
 
-export const SAMPLE_MEMBERS: CircleMember[] = CIRCLE.map((f) => ({
-  id: f.id,
-  name: f.name,
-  handle: f.handle,
-  look: f.look,
-  song: f.song,
-  artist: f.artist,
-  mood: f.mood,
-  quiet: false,
-  allowsPlay: f.allowsPlay,
-  avatarPath: null,
-  sample: true,
-}));
 
 /** Your circle (mutual follows) with their Sonas and what they chose to share. */
 export function useCircleMembers() {
