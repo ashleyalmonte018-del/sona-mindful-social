@@ -1,9 +1,9 @@
 -- Extend online matches to all four Circle minigames and retain a private record of results.
+alter table public.match_sessions drop constraint if exists match_sessions_game_check;
 update public.match_sessions
 set game = 'ttt'
 where game = 'tic-tac-toe';
 
-alter table public.match_sessions drop constraint if exists match_sessions_game_check;
 alter table public.match_sessions add constraint match_sessions_game_check check (game in ('ttt', 'rps', 'oe', 'dots'));
 
 create table if not exists public.game_results (
