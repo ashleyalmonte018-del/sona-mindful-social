@@ -13,5 +13,7 @@ CREATE TABLE IF NOT EXISTS public.game_results (
 );
 GRANT SELECT, INSERT ON public.game_results TO authenticated;
 ALTER TABLE public.game_results ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Players can read their game results" ON public.game_results;
 CREATE POLICY "Players can read their game results" ON public.game_results FOR SELECT TO authenticated USING (auth.uid() = player_a_id OR auth.uid() = player_b_id);
+DROP POLICY IF EXISTS "Players can record their game results" ON public.game_results;
 CREATE POLICY "Players can record their game results" ON public.game_results FOR INSERT TO authenticated WITH CHECK ((auth.uid() = player_a_id OR auth.uid() = player_b_id) AND public.are_friends(player_a_id, player_b_id));
