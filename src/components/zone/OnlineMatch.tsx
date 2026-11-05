@@ -49,8 +49,11 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
       setInvites((data ?? []) as Match[]);
     };
     void load();
-    const channel = supabase.channel(`match-invites:${myId}:${crypto.randomUUID()}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, (payload) => setInvites((old) => [payload.new as Match, ...old])).subscribe();
-    return () => { void supabase.removeChannel(channel); };
+    // Invitations are intentionally polled. This avoids a Supabase Realtime channel
+    // being re-used during React's development reconnect cycle; the active match
+    // itself still receives realtime move updates below.
+    const timer = window.setInterval(() => void load(), 10_000);
+    return () => window.clearInterval(timer);
   }, [myId]);
 
   async function accept(invite: Match) {
