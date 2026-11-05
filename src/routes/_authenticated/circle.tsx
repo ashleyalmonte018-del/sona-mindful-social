@@ -218,7 +218,7 @@ function CirclePage() {
                 </div>
               )}
               {!allow && <p className="subline mt-3 text-sm">Visits are off — it's just you and your Sona. Turn visits on in the side panel to play with your circle.</p>}
-              {allow && usingSamples && <p className="mt-3 text-xs text-muted-foreground">These are sample Sonas until people join your circle.</p>}
+              {allow && usingSamples && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, and their Sona will appear here.</p>}
               {allow && !usingSamples && tierFilter !== "all" && (
                 <p className="mt-3 text-xs text-muted-foreground">Showing {tierLabel(tierFilter)} only.</p>
               )}
