@@ -120,7 +120,7 @@ function AuthPage() {
                 {mode === "up" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="name">What should we call you?</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Ashley" className="rounded-full" />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="rounded-full" />
                   </div>
                 )}
                 <div className="space-y-1.5">
