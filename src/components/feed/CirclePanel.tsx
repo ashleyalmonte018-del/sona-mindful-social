@@ -1,3 +1,4 @@
+import { useCircleMembers } from "@/hooks/use-circle";
 import { Link } from "@tanstack/react-router";
 import { Music2 } from "lucide-react";
 
