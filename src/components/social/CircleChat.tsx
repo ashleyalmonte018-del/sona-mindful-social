@@ -38,7 +38,10 @@ export function CircleChat({ members, myId }: { members: CircleMember[]; myId: s
     setBusy(true);
     const { error } = await supabase.from("circle_messages").insert({ sender_id: myId, recipient_id: person, body: text });
     setBusy(false);
-    if (error) toast.error("Couldn't send that", { description: error.message }); else setBody("");
+    if (error) {
+      const missing = /circle_messages|schema cache|relation .* does not exist/i.test(error.message);
+      toast.error(missing ? "Chat needs one database update" : "Couldn't send that", { description: missing ? "Ask Lovable to apply the latest database migration, then refresh Preview." : error.message });
+    } else setBody("");
   }
 
   return <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">

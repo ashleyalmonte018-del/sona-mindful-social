@@ -27,12 +27,20 @@ export function OnlineMatch({ myId, opponentId, game, onReady }: { myId: string;
 
   useEffect(() => {
     if (!opponentId || !game || match) return;
-    setBusy(true);
-    void supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: { board: Array(9).fill(null), turn: myId, winner: null, moves: {} } }).select("*").single().then(({ data, error }) => {
-      setBusy(false);
-      if (error) toast.error("Couldn't invite that Circle member", { description: error.message });
-      else { setMatch(data as Match); onReady?.(); }
-    });
+    let active = true;
+    const start = async () => {
+      setBusy(true);
+      try {
+        const { data, error } = await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: { board: Array(9).fill(null), turn: myId, winner: null, moves: {} } }).select("*").single();
+        if (!active) return;
+        if (error) toast.error(/match_sessions|schema cache|relation .* does not exist/i.test(error.message) ? "Games need one database update" : "Couldn't invite that Circle member", { description: error.message });
+        else { setMatch(data as Match); onReady?.(); }
+      } catch (error) {
+        if (active) toast.error("Couldn't start that game", { description: error instanceof Error ? error.message : "Please try again." });
+      } finally { if (active) setBusy(false); }
+    };
+    void start();
+    return () => { active = false; };
   }, [game, myId, onReady, opponentId]);
 
   useEffect(() => {
