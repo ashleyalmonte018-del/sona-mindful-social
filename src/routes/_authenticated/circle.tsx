@@ -13,7 +13,6 @@ import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
-import { CircleChat } from "@/components/social/CircleChat";
 import { OnlineMatch } from "@/components/zone/OnlineMatch";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
 import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
@@ -114,9 +113,9 @@ function CirclePage() {
       mood: quiet || m.quiet ? null : m.mood,
     }));
     setBuddies([me, ...others]);
-    if (!visitors.some((v) => v.id === opponent)) setOpponent("practice");
+    if (!members.some((v) => v.id === opponent && v.allowsPlay)) setOpponent("practice");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile.look, visitors, quiet, s.share.song, s.share.mood]);
+  }, [profile.look, visitors, members, quiet, s.share.song, s.share.mood]);
 
   // Idle wandering for visitors
   useEffect(() => {
@@ -132,7 +131,7 @@ function CirclePage() {
   }
 
   const sel = buddies.find((b) => b.id === selected);
-  const opp = visitors.find((f) => f.id === opponent);
+  const opp = members.find((f) => f.id === opponent);
   const players: Players = {
     me: { name: "You", look: profile.look },
     them: opp ? { name: opp.name, look: opp.look } : { name: profile.look.name || "Sona", look: { ...profile.look, skin: "#f3f4f1" } },
@@ -241,7 +240,7 @@ function CirclePage() {
                 <button onClick={() => setOpponent("practice")} className={cn("rounded-full border px-3 py-1", opponent === "practice" ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card")}>
                   My Sona
                 </button>
-                {visitors.map((f) => (
+                {members.filter((f) => f.allowsPlay).map((f) => (
                   <button key={f.id} onClick={() => setOpponent(f.id)} className={cn("rounded-full border px-3 py-1", opponent === f.id ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card")}>
                     {f.name}
                   </button>
@@ -278,7 +277,7 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              <game.C players={players} />
+              {opponent === "practice" || !["ttt", "rps"].includes(game.id) ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id === "ttt" ? "tic-tac-toe" : "rps"} />}
             </>
           )}
         </DialogContent>
@@ -366,7 +365,6 @@ function CircleSidePanel({
 
   return (
     <aside aria-label="Circle controls" className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-      <CircleChat members={members} myId={profile.id} />
       <section className="rounded-[2rem] border border-border bg-card p-5 shadow-soft">
         <h2 className="heading-calm text-2xl">Circle controls</h2>
         <div className="mt-3 divide-y divide-border">
@@ -489,11 +487,11 @@ function TierChip({ label, count, on, onClick }: { label: string; count: number;
 function MemberRow({ member, tiers, onToggle }: { member: CircleMember; tiers: TierId[]; onToggle: (t: TierId, on: boolean) => void }) {
   return (
     <li className="flex items-center gap-3 rounded-2xl p-2 hover:bg-secondary/60">
-      <Link to="/people/$id" params={{ id: member.id }} className="flex size-10 shrink-0 items-end justify-center overflow-hidden rounded-full bg-secondary" aria-label={`${member.name}'s profile`}>
+      <Link to="/chat/$id" params={{ id: member.id }} className="flex size-10 shrink-0 items-end justify-center overflow-hidden rounded-full bg-secondary" aria-label={`Chat with ${member.name}`}>
         <SonaFigure look={member.look} pose="stand" noShadow className="-mb-3 h-12" />
       </Link>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{member.name}</p>
+        <Link to="/chat/$id" params={{ id: member.id }} className="truncate text-sm font-medium hover:underline">{member.name}</Link>
         <p className="truncate text-xs text-muted-foreground">{tiers.length ? tiers.map(tierLabel).join(" · ") : "Not sorted yet"}</p>
       </div>
       <Popover>

@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedAccountabilityRouteImport } from './routes/_authenticated/accountability'
 import { Route as AuthenticatedCareRouteImport } from './routes/_authenticated/care'
+import { Route as AuthenticatedChatIdRouteImport } from './routes/_authenticated/chat.$id'
 import { Route as AuthenticatedCircleRouteImport } from './routes/_authenticated/circle'
 import { Route as AuthenticatedCurateRouteImport } from './routes/_authenticated/curate'
 import { Route as AuthenticatedFeedRouteImport } from './routes/_authenticated/feed'
@@ -50,6 +51,11 @@ const AuthenticatedAccountabilityRoute =
 const AuthenticatedCareRoute = AuthenticatedCareRouteImport.update({
   id: '/care',
   path: '/care',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedChatIdRoute = AuthenticatedChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedCircleRoute = AuthenticatedCircleRouteImport.update({
@@ -119,6 +125,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/accountability': typeof AuthenticatedAccountabilityRoute
   '/care': typeof AuthenticatedCareRoute
+  '/chat/$id': typeof AuthenticatedChatIdRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/accountability': typeof AuthenticatedAccountabilityRoute
   '/care': typeof AuthenticatedCareRoute
+  '/chat/$id': typeof AuthenticatedChatIdRoute
   '/circle': typeof AuthenticatedCircleRoute
   '/curate': typeof AuthenticatedCurateRoute
   '/feed': typeof AuthenticatedFeedRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/accountability': typeof AuthenticatedAccountabilityRoute
   '/_authenticated/care': typeof AuthenticatedCareRoute
+  '/_authenticated/chat/$id': typeof AuthenticatedChatIdRoute
   '/_authenticated/circle': typeof AuthenticatedCircleRoute
   '/_authenticated/curate': typeof AuthenticatedCurateRoute
   '/_authenticated/feed': typeof AuthenticatedFeedRoute
@@ -177,6 +186,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/accountability'
     | '/care'
+    | '/chat/$id'
     | '/circle'
     | '/curate'
     | '/feed'
@@ -195,6 +205,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/accountability'
     | '/care'
+    | '/chat/$id'
     | '/circle'
     | '/curate'
     | '/feed'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/accountability'
     | '/_authenticated/care'
+    | '/_authenticated/chat/$id'
     | '/_authenticated/circle'
     | '/_authenticated/curate'
     | '/_authenticated/feed'
@@ -269,6 +281,13 @@ declare module '@tanstack/react-router' {
       path: '/care'
       fullPath: '/care'
       preLoaderRoute: typeof AuthenticatedCareRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/chat/$id': {
+      id: '/_authenticated/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof AuthenticatedChatIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/circle': {
@@ -361,6 +380,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAccountabilityRoute: typeof AuthenticatedAccountabilityRoute
   AuthenticatedCareRoute: typeof AuthenticatedCareRoute
+  AuthenticatedChatIdRoute: typeof AuthenticatedChatIdRoute
   AuthenticatedCircleRoute: typeof AuthenticatedCircleRoute
   AuthenticatedCurateRoute: typeof AuthenticatedCurateRoute
   AuthenticatedFeedRoute: typeof AuthenticatedFeedRoute
@@ -378,6 +398,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAccountabilityRoute: AuthenticatedAccountabilityRoute,
   AuthenticatedCareRoute: AuthenticatedCareRoute,
+  AuthenticatedChatIdRoute: AuthenticatedChatIdRoute,
   AuthenticatedCircleRoute: AuthenticatedCircleRoute,
   AuthenticatedCurateRoute: AuthenticatedCurateRoute,
   AuthenticatedFeedRoute: AuthenticatedFeedRoute,

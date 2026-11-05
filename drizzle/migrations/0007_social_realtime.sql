@@ -93,7 +93,9 @@ GRANT SELECT, INSERT ON public.match_moves TO authenticated;
 ALTER TABLE public.match_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.match_moves ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Match participants read" ON public.match_sessions FOR SELECT TO authenticated USING (auth.uid() = host_id OR auth.uid() = guest_id);
-CREATE POLICY "Circle members create matches" ON public.match_sessions FOR INSERT TO authenticated WITH CHECK (auth.uid() = host_id);
+CREATE POLICY "Circle members create matches" ON public.match_sessions FOR INSERT TO authenticated WITH CHECK (
+  auth.uid() = host_id
+);
 CREATE POLICY "Match participants update" ON public.match_sessions FOR UPDATE TO authenticated USING (auth.uid() = host_id OR auth.uid() = guest_id);
 CREATE POLICY "Match participants moves read" ON public.match_moves FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.match_sessions m WHERE m.id = match_id AND (auth.uid() = m.host_id OR auth.uid() = m.guest_id)));
 CREATE POLICY "Match participants moves insert" ON public.match_moves FOR INSERT TO authenticated WITH CHECK (auth.uid() = player_id AND EXISTS (SELECT 1 FROM public.match_sessions m WHERE m.id = match_id AND (auth.uid() = m.host_id OR auth.uid() = m.guest_id)));
