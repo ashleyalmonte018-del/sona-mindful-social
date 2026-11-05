@@ -82,7 +82,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
       player_a_id: match.host_id,
       player_b_id: match.guest_id,
       match_id: match.id,
-    }).then(({ error }) => {
+    }).then(async ({ error }) => {
       if (error && error.code !== "23505") toast.error("Game result could not be saved", { description: error.message });
       else {
         recorded.current = match.id;
