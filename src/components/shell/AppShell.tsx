@@ -56,8 +56,16 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     for (const notification of turnNotifications.data) {
       if (shownTurnNotifications.current.has(notification.id)) continue;
       shownTurnNotifications.current.add(notification.id);
-      toast(notification.title, { description: notification.body, action: { label: "Open Circle", onClick: () => navigate({ to: "/circle" }) } });
-      void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+      toast(notification.title, {
+        description: notification.body,
+        action: {
+          label: "Open Circle",
+          onClick: () => {
+            void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+            navigate({ to: "/circle" });
+          },
+        },
+      });
     }
   }, [turnNotifications.data, navigate]);
   useEffect(() => {

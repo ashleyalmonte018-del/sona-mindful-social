@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export type OnlineGameId = "ttt" | "rps" | "oe" | "dots";
 type GameState = { board?: Mark[] | undefined; turn?: string | undefined; winner?: string | null | undefined; moves?: Record<string, string> | undefined; result?: string | null | undefined; call?: Parity | undefined; fingers?: Record<string, number> | undefined; dots?: DotsState | undefined };
-type Match = { id: string; game: OnlineGameId; host_id: string; guest_id: string | null; state: GameState; status: string };
+type Match = { id: string; game: OnlineGameId; host_id: string; guest_id: string | null; state: GameState; status: string; updated_at: string };
 type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode };
 
 const emptyState = (game: OnlineGameId, host: string): GameState => game === "dots" ? { dots: newDots(3, 3), turn: host } : { board: Array(9).fill(null), turn: host, winner: null, moves: {}, fingers: {} };
@@ -65,12 +65,20 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase.from("match_sessions").select("*").eq("guest_id", myId).eq("status", "waiting").order("created_at", { ascending: false });
+      const { data, error } = await supabase.from("match_sessions").select("*").eq("guest_id", myId).eq("status", "waiting").order("created_at", { ascending: false });
+      if (error) {
+        setDatabaseError(/match_sessions|schema cache|relation .* does not exist/i.test(error.message));
+        return;
+      }
       setInvites((data ?? []) as Match[]);
     };
     void load();
-    const timer = window.setInterval(() => void load(), 10_000);
-    return () => window.clearInterval(timer);
+    const timer = window.setInterval(() => void load(), 15_000);
+    const channel = supabase.channel(`match-invites:${myId}`).on("postgres_changes", { event: "*", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, () => void load()).subscribe();
+    return () => {
+      window.clearInterval(timer);
+      void supabase.removeChannel(channel);
+    };
   }, [myId]);
 
   useEffect(() => {

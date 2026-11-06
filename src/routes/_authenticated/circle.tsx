@@ -298,6 +298,11 @@ const GAME_LABELS: Record<string, string> = {
   dots: "Dots and Boxes",
 };
 
+function formatGameTimestamp(value: string) {
+  const date = new Date(value);
+  return `${date.toISOString().slice(0, 16).replace("T", " ")} UTC`;
+}
+
 function GameHistory({ myId }: { myId: string }) {
   const resultsQ = useQuery({
     queryKey: ["game-history", myId],
@@ -341,7 +346,7 @@ function GameHistory({ myId }: { myId: string }) {
               <div key={result.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 px-3 py-2 text-sm">
                 <div className="min-w-0">
                   <p className="truncate">{GAME_LABELS[result.game] ?? result.game} · {opponent?.display_name ?? "Circle member"}</p>
-                  <p className="text-xs text-muted-foreground">{new Date(result.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{formatGameTimestamp(result.created_at)}</p>
                 </div>
                 <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs", outcome === "Win" ? "bg-lime-soft text-foreground" : outcome === "Loss" ? "bg-orange-soft text-foreground" : "bg-muted text-muted-foreground")}>{outcome}</span>
               </div>
