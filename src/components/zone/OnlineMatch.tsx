@@ -185,8 +185,11 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
       });
       return;
     }
-    if (data === true) toast.success("Invitation notification sent.");
-    else toast.info("This match is no longer waiting for an invitation.");
+    if (data === true) {
+      toast.success("Invitation notification sent.", { description: "Your friend can accept it from their Sona notifications." });
+    } else {
+      toast.info("This match is no longer waiting for an invitation.");
+    }
   }
 
   async function discardMatch() {
