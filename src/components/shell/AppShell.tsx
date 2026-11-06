@@ -66,8 +66,12 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
       toast(notification.title, {
         description: notification.body,
         action: {
-          label: "Open Circle",
+          label: notification.kind === "game_invite" ? "Accept invite" : "Open Circle",
           onClick: () => {
+            if (notification.kind === "game_invite" && notification.match_id) {
+              window.sessionStorage.setItem("sona:game-invite", notification.match_id);
+              window.dispatchEvent(new CustomEvent("sona:open-game-invite", { detail: { matchId: notification.match_id } }));
+            }
             void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
             navigate({ to: "/circle" });
           },

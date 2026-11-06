@@ -94,6 +94,11 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
 
   useEffect(() => {
     if (!showInvites) return;
+    const openRequestedInvite = async (matchId: string) => {
+      const { data } = await supabase.from("match_sessions").select("*").eq("id", matchId).eq("guest_id", myId).eq("status", "waiting").maybeSingle();
+      window.sessionStorage.removeItem("sona:game-invite");
+      if (data) await accept(data as Match);
+    };
     const load = async () => {
       const { data, error } = await supabase.from("match_sessions").select("*").eq("guest_id", myId).eq("status", "waiting").order("created_at", { ascending: false });
       if (error) {
@@ -107,6 +112,13 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
       setInvites([...uniqueByGame.values()]);
     };
     void load();
+    const requestedInvite = window.sessionStorage.getItem("sona:game-invite");
+    if (requestedInvite) void openRequestedInvite(requestedInvite);
+    const onOpenRequestedInvite = (event: Event) => {
+      const matchId = (event as CustomEvent<{ matchId?: string }>).detail?.matchId;
+      if (matchId) void openRequestedInvite(matchId);
+    };
+    window.addEventListener("sona:open-game-invite", onOpenRequestedInvite);
     const timer = window.setInterval(() => void load(), 15_000);
     const channel = supabase.channel(`match-invites:${myId}`).on("postgres_changes", { event: "*", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, (payload) => {
       if (payload.eventType === "UPDATE" || payload.eventType === "DELETE") {
@@ -120,6 +132,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     }).subscribe();
     return () => {
       window.clearInterval(timer);
+      window.removeEventListener("sona:open-game-invite", onOpenRequestedInvite);
       void supabase.removeChannel(channel);
     };
   }, [myId, showInvites]);
