@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
@@ -14,6 +14,7 @@ import { useFollowRequests } from "@/hooks/use-social";
 import { supabase } from "@/integrations/supabase/client";
 import { applyTheme, DEFAULT_THEME } from "@/lib/sona/theme";
 import { useActiveTime } from "@/lib/sona/usage";
+import { limitReached, needsSetup } from "@/lib/sona/setup";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -32,6 +33,11 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   const { profile, isLoading, isError, error, refetch, update } = useSonaProfile();
   const [checkIn, setCheckIn] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const setupRequired = Boolean(profile && needsSetup(profile.settings.setupCompleted));
+  useEffect(() => {
+    if (setupRequired && location.pathname !== '/setup') void navigate({ to: '/setup', replace: true });
+  }, [setupRequired, location.pathname, navigate]);
   const openCheckIn = useCallback(() => {
     window.dispatchEvent(new Event("sona:pause"));
     setCheckIn(true);
@@ -44,7 +50,8 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     enabled: Boolean(profile?.id),
     refetchInterval: 15_000,
     queryFn: async () => {
-      const { data, error } = await supabase.from("notifications").select("id,title,body,match_id,created_at").eq("recipient_id", profile!.id).eq("kind", "game_turn").is("read_at", null).order("created_at", { ascending: false }).limit(10);
+      if (!profile) return [];
+      const { data, error } = await supabase.from("notifications").select("id,title,body,match_id,created_at").eq("recipient_id", profile.id).eq("kind", "game_turn").is("read_at", null).order("created_at", { ascending: false }).limit(10);
       if (error) throw error;
       return data ?? [];
     },
@@ -88,14 +95,19 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     }
     lastCount.current = pendingCount;
   }, [pendingCount, requests.isSuccess, requests.data, navigate]);
-    const [snoozed, setSnoozed] = useState(false);
+  const [snoozeUntil, setSnoozeUntil] = useState<number | null>(null);
+  const [now, setNow] = useState(0);
+  useEffect(() => {
+    const tick = () => setNow(Date.now());
+    tick();
+    const timer = window.setInterval(tick, 1000);
+    return () => window.clearInterval(timer);
+  }, []);
   const timeLimit = profile?.settings.timeLimit ?? 45;
-  const isLimitReached = Boolean(
-    profile?.settings.accountability &&
-    timeLimit > 0 &&
-    minutesToday >= timeLimit &&
-    !snoozed
-  );
+  const isLimitReached = !setupRequired && location.pathname !== '/accountability' && location.pathname !== '/care' && location.pathname !== '/settings' && limitReached(minutesToday, timeLimit, profile?.settings.accountability ?? false, snoozeUntil, now);
+  useEffect(() => {
+    if (isLimitReached) window.dispatchEvent(new Event('sona:pause'));
+  }, [isLimitReached]);
 
 
   // Keep <html> in sync with the saved theme (preset / custom colour / dark mode).
@@ -167,7 +179,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
           </div>
         ) : (
           <SonaProvider value={{ profile, update }}>
-            {children}
+            {setupRequired && location.pathname !== '/setup' ? <p className="subline py-12 text-center">Opening Set Up…</p> : children}
             {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} onRest={openCheckIn} />}
             {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}             {isLimitReached && (
               <div 
@@ -197,7 +209,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
                     <Button 
                       variant="ghost" 
                       className="w-full text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => setSnoozed(true)}
+                      onClick={() => setSnoozeUntil(Date.now() + 5 * 60_000)}
                     >
                       Snooze for 5 more minutes
                     </Button>

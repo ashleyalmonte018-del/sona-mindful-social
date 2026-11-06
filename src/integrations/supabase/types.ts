@@ -14,36 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      circle_messages: {
-        Row: { id: string; sender_id: string; recipient_id: string; body: string; created_at: string }
-        Insert: { id?: string; sender_id: string; recipient_id: string; body: string; created_at?: string }
-        Update: { id?: string; sender_id?: string; recipient_id?: string; body?: string; created_at?: string }
-        Relationships: []
-      }
-      match_sessions: {
-        Row: { id: string; game: string; host_id: string; guest_id: string | null; state: Json; status: string; created_at: string; updated_at: string }
-        Insert: { id?: string; game: string; host_id: string; guest_id?: string | null; state?: Json; status?: string; created_at?: string; updated_at?: string }
-        Update: { id?: string; game?: string; host_id?: string; guest_id?: string | null; state?: Json; status?: string; created_at?: string; updated_at?: string }
-        Relationships: []
-      }
-      match_moves: {
-        Row: { id: string; match_id: string; player_id: string; move: Json; created_at: string }
-        Insert: { id?: string; match_id: string; player_id: string; move: Json; created_at?: string }
-        Update: { id?: string; match_id?: string; player_id?: string; move?: Json; created_at?: string }
-        Relationships: []
-      }
-      game_results: {
-        Row: { id: string; game: string; winner_id: string | null; loser_id: string | null; player_a_id: string; player_b_id: string; match_id: string | null; created_at: string }
-        Insert: { id?: string; game: string; winner_id?: string | null; loser_id?: string | null; player_a_id: string; player_b_id: string; match_id?: string | null; created_at?: string }
-        Update: { id?: string; game?: string; winner_id?: string | null; loser_id?: string | null; player_a_id?: string; player_b_id?: string; match_id?: string | null; created_at?: string }
-        Relationships: []
-      }
-      notifications: {
-        Row: { id: string; recipient_id: string; kind: string; title: string; body: string; match_id: string | null; read_at: string | null; created_at: string }
-        Insert: { id?: string; recipient_id: string; kind: string; title: string; body: string; match_id?: string | null; read_at?: string | null; created_at?: string }
-        Update: { id?: string; recipient_id?: string; kind?: string; title?: string; body?: string; match_id?: string | null; read_at?: string | null; created_at?: string }
-        Relationships: []
-      }
       circle_tier_members: {
         Row: {
           created_at: string
@@ -95,6 +65,47 @@ export type Database = {
         }
         Relationships: []
       }
+      game_results: {
+        Row: {
+          created_at: string
+          game: string
+          id: string
+          loser_id: string | null
+          match_id: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id?: string
+          player_b_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_results_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -125,6 +136,39 @@ export type Database = {
         }
         Relationships: []
       }
+      match_sessions: {
+        Row: {
+          created_at: string
+          game: string
+          guest_id: string | null
+          host_id: string
+          id: string
+          state: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          guest_id?: string | null
+          host_id: string
+          id?: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          guest_id?: string | null
+          host_id?: string
+          id?: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mood_checkins: {
         Row: {
           created_at: string
@@ -151,6 +195,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          shared_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          shared_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          shared_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_shares_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -253,9 +333,6 @@ export type Database = {
           id: string
           image_path: string | null
           is_shareable: boolean
-          circle_tiers: string[]
-          reshared_from: string | null
-          shared_by: string | null
           labels: Json
           media_type: string
           topics: string[]
@@ -271,9 +348,6 @@ export type Database = {
           id?: string
           image_path?: string | null
           is_shareable?: boolean
-          circle_tiers?: string[]
-          reshared_from?: string | null
-          shared_by?: string | null
           labels?: Json
           media_type?: string
           topics?: string[]
@@ -289,9 +363,6 @@ export type Database = {
           id?: string
           image_path?: string | null
           is_shareable?: boolean
-          circle_tiers?: string[]
-          reshared_from?: string | null
-          shared_by?: string | null
           labels?: Json
           media_type?: string
           topics?: string[]
@@ -305,7 +376,6 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
-      can_view_post: { Args: { _post: Json; _viewer: string }; Returns: boolean }
       can_view_gallery: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -326,12 +396,20 @@ export type Database = {
           song: string
         }[]
       }
+      followers_list: {
+        Args: { _owner: string }
+        Returns: {
+          avatar_path: string
+          display_name: string
+          handle: string
+          id: string
+        }[]
+      }
       is_approved_follower: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
       }
       is_public_profile: { Args: { _uid: string }; Returns: boolean }
-      join_match: { Args: { _match: string }; Returns: { id: string; game: string; host_id: string; guest_id: string | null; state: Json; status: string; created_at: string; updated_at: string } }
       people_cards: {
         Args: { _ids: string[] }
         Returns: {
@@ -343,7 +421,6 @@ export type Database = {
         }[]
       }
       profile_card: { Args: { _id: string }; Returns: Json }
-      share_post: { Args: { _post: string }; Returns: string }
       public_feed_posts: {
         Args: { _limit?: number }
         Returns: {
@@ -368,6 +445,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      public_post_link: { Args: { _post: string }; Returns: boolean }
       reaches_public_feed: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -382,16 +460,32 @@ export type Database = {
           is_public: boolean
         }[]
       }
-      followers_list: {
-  Args: { _owner: string }
-  Returns: {
-    id: string
-    display_name: string
-    handle: string
-    avatar_path: string | null
-  }[]
-}
-
+      share_post: { Args: { _post: string }; Returns: string }
+      shared_feed_posts: {
+        Args: { _limit?: number }
+        Returns: {
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          disclosure_note: string | null
+          disclosures: Json
+          id: string
+          image_path: string | null
+          is_shareable: boolean
+          labels: Json
+          media_type: string
+          topics: string[]
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_posts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      shared_post_card: { Args: { _post: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
@@ -399,7 +493,6 @@ export type Database = {
     CompositeTypes: {
       [_ in never]: never
     }
-
   }
 }
 

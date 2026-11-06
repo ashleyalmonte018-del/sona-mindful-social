@@ -154,6 +154,8 @@ export function useFollowRequests(myId: string | undefined, opts?: { poll?: bool
 export function useFollowActions(myId: string) {
   const qc = useQueryClient();
   const refresh = () => {
+    qc.invalidateQueries({ queryKey: ['circle-members'] });
+    qc.invalidateQueries({ queryKey: ['circle-tiers'] });
     qc.invalidateQueries({ queryKey: ["profile-card"] });
     qc.invalidateQueries({ queryKey: ["follow-requests"] });
     qc.invalidateQueries({ queryKey: ["posts-by"] });
@@ -227,38 +229,32 @@ export function useSharePost() {
   return useMutation({
     mutationFn: async (postId: string) => {
       const { error } = await supabase.rpc("share_post", { _post: postId });
-      if (!error) return;
-      // Older Preview databases may not have refreshed the new RPC yet. Keep sharing usable
-      // against the existing user_posts table while the migration catches up.
-      if (!/share_post|schema cache|function .* does not exist/i.test(error.message)) throw error;
-      const { data: source, error: sourceError } = await supabase.from("user_posts").select("*").eq("id", postId).maybeSingle();
-      if (sourceError || !source) throw sourceError ?? new Error("That post is no longer available");
-      if (source.is_shareable === false) throw new Error("The creator turned sharing off");
-      const { data: auth } = await supabase.auth.getUser();
-      if (!auth.user) throw new Error("Sign in again before sharing");
-      const { error: insertError } = await supabase.from("user_posts").insert({
-        user_id: auth.user.id,
-        body: source.body,
-        image_path: source.image_path,
-        category: source.category,
-        topics: source.topics,
-        disclosures: source.disclosures,
-        labels: source.labels,
-        media_type: source.media_type,
-        audience: source.audience,
-        disclosure_note: source.disclosure_note,
-        is_shareable: false,
-      });
-      if (insertError) throw insertError;
+      if (error) throw error;
     },
     onSuccess: () => {
-      toast.success("Shared to the feed");
+      toast.success("Shared with your Circle — the original audience still applies");
+      qc.invalidateQueries({ queryKey: ['feed-shared'] });
       qc.invalidateQueries({ queryKey: ["feed-public"] });
       qc.invalidateQueries({ queryKey: ["feed-circle"] });
       qc.invalidateQueries({ queryKey: ["posts-by"] });
     },
     onError: (e: Error) => toast.error("Couldn't share that", { description: e.message }),
   });
+}
+
+export function useSharedFeed() {
+  return useQuery({ queryKey: ['feed-shared'], queryFn: async () => {
+    const { data, error } = await supabase.rpc('shared_feed_posts', { _limit: 15 });
+    if (error) throw error;
+    return (data ?? []).map(toUserPost);
+  } });
+}
+
+export async function copyPostLink(postId: string) {
+  const { data, error } = await supabase.rpc('public_post_link', { _post: postId });
+  if (error) throw error;
+  if (!data) throw new Error('Only shareable Public Feed posts from public accounts have a public link.');
+  await navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
 }
 
 /** Private buckets: everything is served through short-lived signed links. */

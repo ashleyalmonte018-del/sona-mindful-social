@@ -214,6 +214,7 @@ export const DEFAULT_LOOK: SonaLook = {
 // ---------- User settings ----------
 
 export interface SonaSettings {
+  setupCompleted?: boolean;
   curate: Record<TopicId, Filter>;
   guard: GuardLevel;
   vibe: Dials;
