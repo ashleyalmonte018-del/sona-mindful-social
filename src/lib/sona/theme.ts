@@ -11,11 +11,41 @@ export interface ThemeChoice {
 }
 
 /** Preview swatches are data for the picker only; the real palettes live in styles.css. */
-export const THEME_PRESETS: { id: Exclude<ThemePreset, "custom">; label: string; blurb: string; swatch: [string, string, string] }[] = [
-  { id: "green", label: "Green glow", blurb: "The original lime tint", swatch: ["#d7f75b", "#9fe3c9", "#f4f5ef"] },
-  { id: "lavender", label: "Lavender", blurb: "Lilac into silk pink", swatch: ["#c9b2ec", "#f3bfd6", "#f6f2fa"] },
-  { id: "dusk", label: "Dusk blue", blurb: "Soft blue into peach", swatch: ["#9fb6ea", "#f6c9a8", "#f1f4fa"] },
-  { id: "cream", label: "Warm cream", blurb: "Honey into rose sand", swatch: ["#f2cf86", "#eeb29c", "#faf5ea"] },
+export const THEME_PRESETS: {
+  id: Exclude<ThemePreset, "custom">;
+  label: string;
+  blurb: string;
+  swatch: [string, string, string];
+  darkSwatch: [string, string, string];
+}[] = [
+  {
+    id: "green",
+    label: "Green glow",
+    blurb: "The original lime tint",
+    swatch: ["#d7f75b", "#9fe3c9", "#f4f5ef"],
+    darkSwatch: ["#d5a85e", "#508879", "#202b32"],
+  },
+  {
+    id: "lavender",
+    label: "Lavender",
+    blurb: "Lilac into silk pink",
+    swatch: ["#c9b2ec", "#f3bfd6", "#f6f2fa"],
+    darkSwatch: ["#c9a5e8", "#946b9e", "#252036"],
+  },
+  {
+    id: "dusk",
+    label: "Dusk blue",
+    blurb: "Soft blue into peach",
+    swatch: ["#9fb6ea", "#f6c9a8", "#f1f4fa"],
+    darkSwatch: ["#91b7e5", "#d69d7f", "#1d293b"],
+  },
+  {
+    id: "cream",
+    label: "Warm cream",
+    blurb: "Honey into rose sand",
+    swatch: ["#f2cf86", "#eeb29c", "#faf5ea"],
+    darkSwatch: ["#dbb76e", "#ad776b", "#2c261e"],
+  },
 ];
 
 export const DEFAULT_THEME: ThemeChoice = { preset: "green", custom: "#7fd1b9", mode: "light" };
@@ -27,8 +57,13 @@ export function normalizeTheme(raw: unknown): ThemeChoice {
   const t = (raw && typeof raw === "object" ? raw : {}) as Partial<ThemeChoice>;
   const presets: ThemePreset[] = ["green", "lavender", "dusk", "cream", "custom"];
   return {
-    preset: presets.includes(t.preset as ThemePreset) ? (t.preset as ThemePreset) : DEFAULT_THEME.preset,
-    custom: typeof t.custom === "string" && HEX.test(t.custom) ? t.custom.toLowerCase() : DEFAULT_THEME.custom,
+    preset: presets.includes(t.preset as ThemePreset)
+      ? (t.preset as ThemePreset)
+      : DEFAULT_THEME.preset,
+    custom:
+      typeof t.custom === "string" && HEX.test(t.custom)
+        ? t.custom.toLowerCase()
+        : DEFAULT_THEME.custom,
     mode: t.mode === "dark" ? "dark" : "light",
   };
 }
@@ -66,8 +101,21 @@ export function rotateHue(hex: string, deg: number): string {
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = l - c / 2;
   const [r1, g1, b1] =
-    h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
-  const to = (v: number) => Math.round((v + m) * 255).toString(16).padStart(2, "0");
+    h < 60
+      ? [c, x, 0]
+      : h < 120
+        ? [x, c, 0]
+        : h < 180
+          ? [0, c, x]
+          : h < 240
+            ? [0, x, c]
+            : h < 300
+              ? [x, 0, c]
+              : [c, 0, x];
+  const to = (v: number) =>
+    Math.round((v + m) * 255)
+      .toString(16)
+      .padStart(2, "0");
   return `#${to(r1)}${to(g1)}${to(b1)}`;
 }
 
@@ -85,9 +133,29 @@ export const CUSTOM_VAR_NAMES = [
   "--glow-2",
 ] as const;
 
-/** CSS variables for a custom colour in light mode. Text on the colour flips dark/light for contrast. */
-export function customThemeVars(hex: string): Record<(typeof CUSTOM_VAR_NAMES)[number], string> {
+/** CSS variables for a custom colour in either mode. */
+export function customThemeVars(
+  hex: string,
+  mode: ColorMode = "light",
+): Record<(typeof CUSTOM_VAR_NAMES)[number], string> {
   const c = HEX.test(hex) ? hex : DEFAULT_THEME.custom;
+  if (mode === "dark") {
+    const surface = "oklch(0.2 0.035 228)";
+    const card = "oklch(0.245 0.036 226)";
+    return {
+      "--lime": `color-mix(in oklab, ${c} 55%, white)`,
+      "--lime-soft": `color-mix(in oklab, ${c} 25%, oklch(0.29 0.033 226))`,
+      "--lime-foreground": "oklch(0.2 0.02 260)",
+      "--accent": `color-mix(in oklab, ${c} 24%, oklch(0.29 0.033 226))`,
+      "--accent-foreground": "oklch(0.95 0.01 90)",
+      "--ring": `color-mix(in oklab, ${c} 55%, white)`,
+      "--background": `color-mix(in oklab, ${c} 8%, ${surface})`,
+      "--card": `color-mix(in oklab, ${c} 5%, ${card})`,
+      "--popover": `color-mix(in oklab, ${c} 5%, oklch(0.25 0.036 226))`,
+      "--glow-1": `color-mix(in oklab, ${c} 60%, white)`,
+      "--glow-2": `color-mix(in oklab, ${rotateHue(c, 45)} 45%, white)`,
+    };
+  }
   const darkText = luminance(c) > 0.4;
   return {
     "--lime": c,
@@ -104,12 +172,12 @@ export function customThemeVars(hex: string): Record<(typeof CUSTOM_VAR_NAMES)[n
   };
 }
 
-/** Apply a theme to <html>. Dark mode always uses the Nightfall palette, so custom colours only apply in light mode. */
+/** Apply a theme to <html>, keeping custom colour accents in both modes. */
 export function applyTheme(t: ThemeChoice, root: HTMLElement = document.documentElement) {
   root.classList.toggle("dark", t.mode === "dark");
   root.style.colorScheme = t.mode;
   root.dataset["theme"] = t.preset;
-  const custom = t.preset === "custom" && t.mode === "light" ? customThemeVars(t.custom) : null;
+  const custom = t.preset === "custom" ? customThemeVars(t.custom, t.mode) : null;
   for (const name of CUSTOM_VAR_NAMES) {
     if (custom) root.style.setProperty(name, custom[name]);
     else root.style.removeProperty(name);
