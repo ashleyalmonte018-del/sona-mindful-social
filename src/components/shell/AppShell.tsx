@@ -1,13 +1,12 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { CheckInOverlay } from "@/components/shell/CheckInOverlay";
-import { SonaHelper } from "@/components/shell/SonaHelper";
+import { SonaHelper, type SonaNotification } from "@/components/shell/SonaHelper";
 import { SonaProvider } from "@/components/shell/SonaContext";
 import { useSonaProfile } from "@/hooks/use-sona-profile";
 import { useFollowRequests } from "@/hooks/use-social";
@@ -44,45 +43,23 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   }, []);
   const { minutesToday } = useActiveTime(openCheckIn, profile?.settings.checkIns ?? true);
 
-  // Game notifications remain available after the Circle page is closed.
-  const gameNotifications = useQuery({
-    queryKey: ["game-notifications", profile?.id],
+  // Persisted app notifications remain available after the originating page is closed.
+  const notificationHistory = useQuery({
+    queryKey: ["notifications", profile?.id],
     enabled: Boolean(profile?.id),
     refetchInterval: 15_000,
     queryFn: async () => {
       if (!profile) return [];
-      const { data, error } = await supabase.from("notifications").select("id,kind,title,body,match_id,created_at").eq("recipient_id", profile.id).in("kind", ["game_invite", "game_turn"]).is("read_at", null).order("created_at", { ascending: false }).limit(10);
+      const { data, error } = await supabase.from("notifications").select("id,kind,title,body,match_id,created_at,read_at").eq("recipient_id", profile.id).order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data ?? [];
     },
   });
   const notificationClient = useQueryClient();
-  const shownGameNotifications = useRef(new Set<string>());
-  useEffect(() => {
-    if (!gameNotifications.data) return;
-    for (const notification of gameNotifications.data) {
-      if (shownGameNotifications.current.has(notification.id)) continue;
-      shownGameNotifications.current.add(notification.id);
-      toast(notification.title, {
-        description: notification.body,
-        action: {
-          label: notification.kind === "game_invite" ? "Accept invite" : "Open Circle",
-          onClick: () => {
-            if (notification.kind === "game_invite" && notification.match_id) {
-              window.sessionStorage.setItem("sona:game-invite", notification.match_id);
-              window.dispatchEvent(new CustomEvent("sona:open-game-invite", { detail: { matchId: notification.match_id } }));
-            }
-            void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
-            navigate({ to: "/circle" });
-          },
-        },
-      });
-    }
-  }, [gameNotifications.data, navigate]);
   useEffect(() => {
     if (!profile?.id) return;
     const channel = supabase.channel(`game-notifications:${profile.id}`).on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
-      void notificationClient.invalidateQueries({ queryKey: ["game-notifications", profile.id] });
+      void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
     }).subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [profile?.id, notificationClient]);
@@ -90,15 +67,36 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   // Follow-request notifications: a badge on Profile, plus a gentle toast when a new one arrives.
   const requests = useFollowRequests(profile?.id, { poll: true });
   const pendingCount = requests.data?.length ?? 0;
-  const lastCount = useRef<number | null>(null);
-  useEffect(() => {
-    if (!requests.isSuccess) return;
-    if (lastCount.current !== null && pendingCount > lastCount.current) {
-      const who = requests.data[0]?.person?.display_name ?? "Someone";
-      toast(`${who} asked to follow you`, { action: { label: "Review", onClick: () => navigate({ to: "/profile" }) } });
-    }
-    lastCount.current = pendingCount;
-  }, [pendingCount, requests.isSuccess, requests.data, navigate]);
+
+  const sonaNotifications: SonaNotification[] = [
+    ...(notificationHistory.data ?? []).map((notification) => ({
+      id: notification.id,
+      title: notification.title,
+      body: notification.body,
+      createdAt: notification.created_at,
+      read: Boolean(notification.read_at),
+      kind: notification.kind,
+      onOpen: () => {
+        if (!notification.read_at) void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
+        if (notification.kind === "game_invite" && notification.match_id) {
+          window.sessionStorage.setItem("sona:game-invite", notification.match_id);
+          window.dispatchEvent(new CustomEvent("sona:open-game-invite", { detail: { matchId: notification.match_id } }));
+          void navigate({ to: "/circle" });
+        } else if (notification.kind === "game_turn") {
+          void navigate({ to: "/circle" });
+        }
+      },
+    })),
+    ...(requests.data ?? []).map((request) => ({
+      id: `follow-request-${request.id}`,
+      title: `${request.person?.display_name ?? "Someone"} asked to follow you`,
+      body: "Open your profile to review the request.",
+      createdAt: request.createdAt,
+      read: false,
+      kind: "follow_request",
+      onOpen: () => { void navigate({ to: "/profile" }); },
+    })),
+  ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const [snoozeUntil, setSnoozeUntil] = useState<number | null>(null);
   const [now, setNow] = useState(0);
   useEffect(() => {
@@ -184,7 +182,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
         ) : (
           <SonaProvider value={{ profile, update }}>
             {setupRequired && location.pathname !== '/setup' ? <p className="subline py-12 text-center">Opening Set Up…</p> : children}
-            {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} onRest={openCheckIn} />}
+            {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} onRest={openCheckIn} notifications={sonaNotifications} />}
             {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}             {isLimitReached && (
               <div 
                 className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-md"

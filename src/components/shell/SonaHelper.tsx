@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Bell, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -15,14 +15,28 @@ const TIPS = [
   "Shoulders down, jaw unclenched.",
 ];
 
+export interface SonaNotification {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  read?: boolean;
+  kind?: string;
+  onOpen?: () => void;
+}
+
 /** The floating Sona buddy: daily check-ins and rest nudges. */
-export function SonaHelper({ minutesToday, onRest }: { minutesToday: number; onRest: () => void }) {
+export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minutesToday: number; onRest: () => void; notifications?: SonaNotification[] }) {
   const { profile } = useSona();
   const { checkedInToday, log, isLoading } = useMoods();
   const [open, setOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
   const needsCheckIn = !isLoading && !checkedInToday;
+  const unread = notifications.filter((notification) => !notification.read);
+  const newestUnread = unread[0];
 
   useEffect(() => {
     if (sessionStorage.getItem("sona.helperShown")) return;
@@ -31,6 +45,12 @@ export function SonaHelper({ minutesToday, onRest }: { minutesToday: number; onR
       sessionStorage.setItem("sona.helperShown", "1");
     }
   }, [needsCheckIn, needsRest]);
+
+  useEffect(() => {
+    if (!newestUnread || newestUnread.id === lastNotificationId) return;
+    setLastNotificationId(newestUnread.id);
+    setOpen(true);
+  }, [lastNotificationId, newestUnread]);
 
   const pose = needsRest ? "rest" : needsCheckIn ? "wave" : "stand";
 
@@ -44,7 +64,24 @@ export function SonaHelper({ minutesToday, onRest }: { minutesToday: number; onR
               <X className="size-4" />
             </button>
           </div>
-          {needsRest ? (
+          {newestUnread && !historyOpen ? (
+            <div className="mt-2">
+              <div className="flex items-center gap-2 text-lime-foreground">
+                <Bell className="size-4" />
+                <span className="eyebrow">New notification</span>
+              </div>
+              <button
+                className="mt-2 w-full rounded-2xl bg-secondary p-3 text-left transition hover:bg-secondary/70"
+                onClick={() => { newestUnread.onOpen?.(); setOpen(false); }}
+              >
+                <p className="font-medium">{newestUnread.title}</p>
+                <p className="mt-1 text-muted-foreground">{newestUnread.body}</p>
+              </button>
+              <button className="mt-3 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setHistoryOpen(true)}>
+                View notification history
+              </button>
+            </div>
+          ) : needsRest ? (
             <>
               <p className="mt-2">
                 You've been here {minutesToday} minutes today. Around {DAILY_GUIDE_MIN} a day is a healthy baseline — time for a rest?
@@ -67,17 +104,36 @@ export function SonaHelper({ minutesToday, onRest }: { minutesToday: number; onR
                 />
               </div>
             </>
+          ) : notifications.length > 0 ? (
+            <div className="mt-2">
+              <p className="font-medium">Notification history</p>
+              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+                {notifications.map((notification) => (
+                  <button
+                    key={notification.id}
+                    className="w-full rounded-2xl bg-secondary p-3 text-left transition hover:bg-secondary/70"
+                    onClick={() => { notification.onOpen?.(); setOpen(false); }}
+                  >
+                    <p className="font-medium">{notification.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{notification.body}</p>
+                    <time className="mt-2 block text-[0.65rem] text-muted-foreground" dateTime={notification.createdAt}>
+                      {new Date(notification.createdAt).toLocaleString()}
+                    </time>
+                  </button>
+                ))}
+              </div>
+            </div>
           ) : (
             <p className="mt-2">{tip}</p>
           )}
         </div>
       )}
       <button
-        onClick={() => setOpen((o) => !o)}
+        onClick={() => { setOpen((o) => !o); setHistoryOpen(false); }}
         className="group relative rounded-full"
         aria-label={open ? "Hide your Sona" : "Talk to your Sona"}
       >
-        {(needsCheckIn || needsRest) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
+        {(needsCheckIn || needsRest || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
         <SonaFigure look={profile.look} doodle={profile.doodle} pose={pose} className="w-16 animate-bob transition group-hover:scale-105" />
       </button>
     </div>
