@@ -3,9 +3,8 @@ import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
-import { MoodPicker } from "@/components/shell/MoodPicker";
+import { BreathingPrompt } from "@/components/shell/BreathingPrompt";
 import { useSona } from "@/components/shell/SonaContext";
-import { useMoods } from "@/hooks/use-sona-profile";
 import { DAILY_GUIDE_MIN } from "@/lib/sona/usage";
 
 const TIPS = [
@@ -26,25 +25,24 @@ export interface SonaNotification {
 }
 
 /** The floating Sona buddy and the Sona Notification Center. */
-export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minutesToday: number; onRest: () => void; notifications?: SonaNotification[] }) {
+export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday: number; notifications?: SonaNotification[] }) {
   const { profile } = useSona();
-  const { checkedInToday, log, isLoading } = useMoods();
   const [open, setOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [breathing, setBreathing] = useState(false);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
-  const needsCheckIn = !isLoading && !checkedInToday;
   const unread = notifications.filter((notification) => !notification.read);
   const newestUnread = unread[0];
 
   useEffect(() => {
     if (sessionStorage.getItem("sona.helperShown")) return;
-    if (needsCheckIn || needsRest) {
+    if (needsRest) {
       setOpen(true);
       sessionStorage.setItem("sona.helperShown", "1");
     }
-  }, [needsCheckIn, needsRest]);
+  }, [needsRest]);
 
   useEffect(() => {
     if (!newestUnread || newestUnread.id === lastNotificationId) return;
@@ -53,7 +51,7 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
     setOpen(true);
   }, [lastNotificationId, newestUnread]);
 
-  const pose = needsRest ? "rest" : needsCheckIn ? "wave" : "stand";
+  const pose = needsRest ? "rest" : "stand";
 
   return (
     <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
@@ -102,27 +100,16 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
                 </div>
               ) : <p className="mt-3 text-muted-foreground">No notifications yet.</p>}
             </div>
+          ) : breathing ? (
+            <BreathingPrompt seconds={30} onDone={() => setBreathing(false)} className="mt-4" />
           ) : needsRest ? (
             <>
               <p className="mt-2">
                 You've been here {minutesToday} minutes today. Around {DAILY_GUIDE_MIN} a day is a healthy baseline — time for a rest?
               </p>
               <div className="mt-3 flex gap-2">
-                <Button size="sm" variant="lime" onClick={() => { setOpen(false); onRest(); }}>Take a breather</Button>
+                <Button size="sm" variant="lime" onClick={() => setBreathing(true)}>Take a breather</Button>
                 <Button size="sm" variant="soft" onClick={() => setOpen(false)}>Later</Button>
-              </div>
-            </>
-          ) : needsCheckIn ? (
-            <>
-              <p className="mt-2">Hey {profile.displayName}! Daily check-in — how are you, really?</p>
-              <div className="mt-3">
-                <MoodPicker
-                  size="sm"
-                  onPick={(m) => {
-                    log.mutate({ mood: m, source: "daily" });
-                    setOpen(false);
-                  }}
-                />
               </div>
             </>
           ) : (
@@ -135,7 +122,7 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
         className="group relative rounded-full"
         aria-label={open ? "Close Sona Notification Center" : "Open Sona Notification Center"}
       >
-        {(needsCheckIn || needsRest || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
+        {(needsRest || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
         <SonaFigure look={profile.look} doodle={profile.doodle} pose={pose} className="w-16 animate-bob transition group-hover:scale-105" />
       </button>
     </div>
