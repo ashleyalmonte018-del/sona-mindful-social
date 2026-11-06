@@ -50,7 +50,7 @@ begin
       'Someone in your Circle invited you to a game match.',
       new.id
     )
-    on conflict (match_id, kind) where kind = 'game_invite' do nothing;
+    on conflict (match_id, kind) where kind = 'game_invite' and match_id is not null do nothing;
   end if;
   return new;
 end;
@@ -71,7 +71,7 @@ select m.guest_id,
 from public.match_sessions m
 where m.status = 'waiting'
   and m.guest_id is not null
-on conflict (match_id, kind) where kind = 'game_invite' do nothing;
+on conflict (match_id, kind) where kind = 'game_invite' and match_id is not null do nothing;
 
 do $$ begin
   alter publication supabase_realtime add table public.notifications;

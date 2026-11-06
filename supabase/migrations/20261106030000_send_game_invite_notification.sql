@@ -26,7 +26,7 @@ begin
     'Someone in your Circle invited you to a game match.',
     _match_id
   )
-  on conflict (match_id, kind) where kind = 'game_invite' do update
+  on conflict (match_id, kind) where kind = 'game_invite' and match_id is not null do update
     set read_at = null, created_at = now();
 
   return true;

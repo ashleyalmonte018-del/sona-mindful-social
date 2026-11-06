@@ -65,7 +65,7 @@ begin
       end || ' match.',
       new.id
     )
-    on conflict (match_id, kind) where kind = 'game_invite' do nothing;
+    on conflict (match_id, kind) where kind = 'game_invite' and match_id is not null do nothing;
   end if;
   return new;
 end;
