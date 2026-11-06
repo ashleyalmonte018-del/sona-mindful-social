@@ -13,13 +13,13 @@ import { cn } from "@/lib/utils";
 export type OnlineGameId = "ttt" | "rps" | "oe" | "dots";
 type GameState = { board?: Mark[] | undefined; turn?: string | undefined; winner?: string | null | undefined; moves?: Record<string, string> | undefined; result?: string | null | undefined; call?: Parity | undefined; fingers?: Record<string, number> | undefined; dots?: DotsState | undefined };
 type Match = { id: string; game: OnlineGameId; host_id: string; guest_id: string | null; state: GameState; status: string; updated_at: string };
-type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode };
+type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode; showInvites?: boolean };
 
 const emptyState = (game: OnlineGameId, host: string): GameState => game === "dots" ? { dots: newDots(3, 3), turn: host } : { board: Array(9).fill(null), turn: host, winner: null, moves: {}, fingers: {} };
 const gameLabel = (game: OnlineGameId) => ({ ttt: "Tic-Tac-Toe", rps: "Rock-Paper-Scissors", oe: "Odds and Evens", dots: "Dots and Boxes" })[game];
 const playerFor = (match: Match, id: string) => match.host_id === id ? 1 : 2;
 
-export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props) {
+export function OnlineMatch({ myId, opponentId, game, players, fallback, showInvites = true }: Props) {
   const [match, setMatch] = useState<Match | null>(null);
   const [busy, setBusy] = useState(false);
   const [invites, setInvites] = useState<Match[]>([]);
@@ -50,7 +50,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
       const existing = mine.data ?? theirs.data;
       const created = existing ? null : await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: emptyState(game, myId) as unknown as Json }).select("*").single();
       const data = existing ?? created?.data;
-      const error = existing ? mine.error ?? theirs.error : created?.error;
+      const error = existing ? null : mine.error ?? theirs.error ?? created?.error;
       if (!active) return;
       setBusy(false);
       if (error) {
@@ -64,6 +64,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
   }, [game, myId, opponentId]);
 
   useEffect(() => {
+    if (!showInvites) return;
     const load = async () => {
       const { data, error } = await supabase.from("match_sessions").select("*").eq("guest_id", myId).eq("status", "waiting").order("created_at", { ascending: false });
       if (error) {
@@ -79,7 +80,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
       window.clearInterval(timer);
       void supabase.removeChannel(channel);
     };
-  }, [myId]);
+  }, [myId, showInvites]);
 
   useEffect(() => {
     if (!match || match.status !== "finished" || !match.state.result || recorded.current === match.id || !match.guest_id) return;
@@ -162,14 +163,14 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback }: Props
   const practice = !match && databaseError && fallback ? <div className="mt-4">{fallback}<p className="mt-3 rounded-2xl bg-care-soft p-3 text-xs text-care">Online play is waiting for the latest database migration. Practice mode is available below.</p></div> : null;
   return <section className="mt-5 rounded-[2rem] border border-border bg-card p-5 shadow-soft">
     <h3 className="heading-calm text-2xl">{match ? gameLabel(match.game) : "Invitations"}</h3>
-    {invites.length > 0 && <div className="mt-3 space-y-2">{invites.map((invite) => <div key={invite.id} className="flex items-center justify-between gap-3 rounded-2xl bg-secondary p-3 text-sm"><span>{gameLabel(invite.game)} invitation</span><Button size="sm" variant="ink" onClick={() => void accept(invite)} disabled={busy}>Play</Button></div>)}</div>}
+    {showInvites && invites.length > 0 && <div className="mt-3 space-y-2">{invites.map((invite) => <div key={invite.id} className="flex items-center justify-between gap-3 rounded-2xl bg-secondary p-3 text-sm"><span>{gameLabel(invite.game)} invitation</span><Button size="sm" variant="ink" onClick={() => void accept(invite)} disabled={busy}>Play</Button></div>)}</div>}
     {match?.status === "waiting" && <p className="mt-4 text-sm text-muted-foreground">Invitation sent — waiting for your Circle member.</p>}
     {match?.status === "active" && match.game === "ttt" && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{winner ? winner === "draw" ? "It's a draw" : `${winner === (match.host_id === myId ? "X" : "O") ? "You win" : "Your friend wins"}!` : match.state.turn === myId ? "Your move" : "Their move"}</p><div className="relative mx-auto grid aspect-square w-full max-w-xs grid-cols-3 rounded-3xl bg-doodle-paper p-3 shadow-soft">{board.map((v, i) => <button key={i} onClick={() => void playTtt(i)} disabled={!!v || !!winner || match.state.turn !== myId} className={cn("flex items-center justify-center border-foreground/20", i % 3 !== 2 && "border-r-[3px]", i < 6 && "border-b-[3px]")}>{v === "X" && <svg viewBox="0 0 40 40" className="size-3/5 animate-pop"><path d="M8 8 L32 32 M32 8 L8 32" stroke="var(--doodle-red)" strokeWidth={6} strokeLinecap="round" /></svg>}{v === "O" && <svg viewBox="0 0 40 40" className="size-3/5 animate-pop"><circle cx={20} cy={20} r={13} fill="none" stroke="var(--doodle-blue)" strokeWidth={6} /></svg>}</button>)}</div></div>}
     {match?.status === "active" && match.game === "rps" && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{match.state.result ? match.state.result === "draw" ? "Same hand — draw!" : match.state.result === myId ? "You win!" : "Your friend wins!" : match.state.turn === myId ? "Pick your hand" : "Waiting for your friend…"}</p><div className="flex items-center justify-center gap-8 rounded-3xl bg-doodle-paper py-8 text-6xl shadow-soft"><span className={cn(shaking && "animate-wiggle")}>{match.state.moves?.[myId] ? ({ rock: "✊", paper: "✋", scissors: "✌️" } as Record<string, string>)[match.state.moves[myId]!] : "✊"}</span><span className="font-doodle text-xl text-muted-foreground">vs</span><span className={cn("-scale-x-100", shaking && "animate-wiggle")}>{match.state.moves?.[match.host_id === myId ? match.guest_id ?? "" : match.host_id] ? ({ rock: "✊", paper: "✋", scissors: "✌️" } as Record<string, string>)[match.state.moves[match.host_id === myId ? match.guest_id ?? "" : match.host_id]!] : "✊"}</span></div><div className="grid grid-cols-3 gap-2">{(["rock", "paper", "scissors"] as RPS[]).map((h) => <button key={h} disabled={match.state.turn !== myId || !!match.state.moves?.[myId] || !!match.state.result} onClick={() => void throwRps(h)} className="rounded-2xl border-[3px] bg-card py-3 font-doodle text-lg capitalize"><span className="mr-1">{({ rock: "✊", paper: "✋", scissors: "✌️" } as Record<string, string>)[h]}</span>{h}</button>)}</div></div>}
     {match?.status === "active" && match.game === "oe" && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{match.state.result ? match.state.result === "draw" ? "Tied!" : match.state.result === myId ? "You win!" : "Your friend wins!" : !match.state.call ? match.host_id === myId ? "Choose odds or evens." : "Waiting for the caller…" : match.state.turn === myId ? `Call: ${match.state.call}. Choose 1–5 fingers.` : "Waiting for your friend…"}</p>{!match.state.call && match.host_id === myId && <div className="grid grid-cols-2 gap-3"><Button variant="soft" onClick={() => void throwOdds("odds")}>Odds</Button><Button variant="soft" onClick={() => void throwOdds("evens")}>Evens</Button></div>}{match.state.call && <div className="grid grid-cols-5 gap-2">{[1,2,3,4,5].map((n) => <button key={n} disabled={match.state.turn !== myId || match.state.fingers?.[myId] != null || !!match.state.result} onClick={() => void throwOdds(undefined, n)} className="aspect-square rounded-2xl border-[3px] bg-card font-doodle text-2xl animate-pop">{n}</button>)}</div>}</div>}
     {match?.status === "active" && match.game === "dots" && match.state.dots && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{match.state.result ? match.state.result === "draw" ? "Tied!" : match.state.result === myId ? "You win!" : "Your friend wins!" : match.state.dots.turn === playerFor(match, myId) ? "Your turn — draw a line" : "Their turn"}</p><DotsBoard state={match.state.dots} myTurn={match.state.dots.turn === playerFor(match, myId)} onLine={(line) => void drawLine(line)} /></div>}
     {match && match.status === "finished" && <p className="mt-4 rounded-2xl bg-secondary p-3 font-doodle">{match.state.result === "draw" ? "Tied game — recorded." : match.state.result === myId ? "Win recorded." : "Loss recorded."}</p>}
-    {!match && !practice && invites.length === 0 && <p className="mt-1 text-sm text-muted-foreground">Choose a Circle member above, then tap a game to invite them.</p>}
+    {!match && !practice && (!showInvites || invites.length === 0) && <p className="mt-1 text-sm text-muted-foreground">Choose a Circle member above, then tap a game to invite them.</p>}
     {practice}
   </section>;
 }
