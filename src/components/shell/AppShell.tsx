@@ -1,7 +1,8 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { LogOut } from "lucide-react";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
@@ -31,6 +32,7 @@ const NAV = [
 export function AppShell({ children, wide }: { children: ReactNode; wide?: boolean }) {
   const { profile, isLoading, isError, error, refetch, update } = useSonaProfile();
   const [checkIn, setCheckIn] = useState(false);
+  const notificationErrorRef = useRef<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const setupRequired = Boolean(profile && needsSetup(profile.settings.setupCompleted));
@@ -58,6 +60,18 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
       return data ?? [];
     },
   });
+  useEffect(() => {
+    const message = notificationHistory.error?.message ?? null;
+    if (message && message !== notificationErrorRef.current) {
+      notificationErrorRef.current = message;
+      toast.error("Couldn't load Sona notifications", {
+        description: message,
+      });
+    } else if (!message) {
+      notificationErrorRef.current = null;
+    }
+  }, [notificationHistory.error]);
+
   const notificationClient = useQueryClient();
   useEffect(() => {
     if (!profile?.id) return;

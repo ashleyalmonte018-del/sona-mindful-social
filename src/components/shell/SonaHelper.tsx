@@ -36,8 +36,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
   const unread = notifications.filter((notification) => !notification.read);
-  const newestUnread = unread[0];
-  const newestNotificationKey = newestUnread ? `${newestUnread.id}:${newestUnread.createdAt}` : null;
+  const unreadNotificationsKey = unread.map((notification) => `${notification.id}:${notification.createdAt}`).join("|");
 
   useEffect(() => {
     // Reaching the daily guide should inform the care view, but must not
@@ -49,16 +48,16 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   }, [needsRest]);
 
   useEffect(() => {
-    if (!newestNotificationKey || newestNotificationKey === lastNotificationKey) return;
-    setLastNotificationKey(newestNotificationKey);
+    if (!unreadNotificationsKey || unreadNotificationsKey === lastNotificationKey) return;
+    setLastNotificationKey(unreadNotificationsKey);
     setShowNotifications(true);
     setOpen(true);
-  }, [lastNotificationKey, newestNotificationKey]);
+  }, [lastNotificationKey, unreadNotificationsKey]);
 
   const pose = needsRest ? "rest" : "stand";
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2">
+    <div className="fixed bottom-4 right-4 z-[60] flex flex-col items-end gap-2">
       {open && (
         <div className="w-72 rounded-3xl border border-border bg-popover p-4 text-sm shadow-float animate-pop">
           <div className="flex items-start justify-between gap-2">
