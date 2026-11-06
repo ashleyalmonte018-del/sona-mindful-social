@@ -45,7 +45,7 @@ begin
       'Someone in your Circle invited you to a game match.',
       new.id
     )
-    on conflict (match_id, kind) do nothing;
+    on conflict (match_id, kind) where kind = 'game_invite' do nothing;
   end if;
   return new;
 end;

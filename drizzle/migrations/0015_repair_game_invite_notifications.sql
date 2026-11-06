@@ -36,7 +36,7 @@ begin
     insert into public.notifications (recipient_id, kind, title, body, match_id)
     values (new.guest_id, 'game_invite', 'New Circle game invitation',
       'Someone in your Circle invited you to a game match.', new.id)
-    on conflict (match_id, kind) do nothing;
+    on conflict (match_id, kind) where kind = 'game_invite' do nothing;
   end if;
   return new;
 end;
@@ -51,7 +51,7 @@ select m.guest_id, 'game_invite', 'New Circle game invitation',
   'Someone in your Circle invited you to a game match.', m.id
 from public.match_sessions m
 where m.status = 'waiting' and m.guest_id is not null
-on conflict (match_id, kind) do nothing;
+on conflict (match_id, kind) where kind = 'game_invite' do nothing;
 
 do $$ begin
   alter publication supabase_realtime add table public.notifications;

@@ -376,6 +376,7 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      send_game_invite_notification: { Args: { _match_id: string }; Returns: boolean }
       can_view_gallery: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
