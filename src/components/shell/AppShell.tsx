@@ -50,7 +50,10 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     refetchInterval: 15_000,
     queryFn: async () => {
       if (!profile) return [];
-      const { data, error } = await supabase.from("notifications").select("id,kind,title,body,match_id,created_at,read_at").eq("recipient_id", profile.id).order("created_at", { ascending: false }).limit(50);
+      // RLS already limits this result to auth.uid(). Avoid a second client-
+      // side recipient filter so a stale cached profile id cannot hide a
+      // notification from the signed-in recipient.
+      const { data, error } = await supabase.from("notifications").select("id,kind,title,body,match_id,created_at,read_at").order("created_at", { ascending: false }).limit(50);
       if (error) throw error;
       return data ?? [];
     },
@@ -59,10 +62,10 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   useEffect(() => {
     if (!profile?.id) return;
     const channel = supabase.channel(`game-notifications:${profile.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
         void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
       })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications" }, () => {
         void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
       })
       .subscribe();
