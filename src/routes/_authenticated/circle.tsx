@@ -73,7 +73,7 @@ function CirclePage() {
 
   const membersQ = useCircleMembers();
   const real = membersQ.data ?? [];
-  const usingSamples = membersQ.isSuccess && real.length === 0;
+  const emptyCircle = membersQ.isSuccess && real.length === 0;
   const members = real;
   const tiers = useCircleTiers(profile.id);
   const [tierFilter, setTierFilter] = useState<TierId | "all">("all");
@@ -225,8 +225,9 @@ function CirclePage() {
                 </div>
               )}
               {!allow && <p className="subline mt-3 text-sm">Visits are off — it's just you and your Sona. Turn visits on in the side panel to play with your circle.</p>}
-              {allow && usingSamples && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, and their Sona will appear here.</p>}
-              {allow && !usingSamples && visitors.length === 0 && (
+              {membersQ.isError && <div className="mt-3 text-sm text-destructive">Couldn't load your Circle. <Button variant="ghost" size="sm" onClick={() => void membersQ.refetch()}>Try again</Button></div>}
+              {allow && emptyCircle && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, then choose their Sona in the side panel.</p>}
+              {allow && membersQ.isSuccess && !emptyCircle && visitors.length === 0 && (
                 <p className="mt-3 text-xs text-muted-foreground">Your Zone is empty — pick who visits from the side panel.</p>)}
             </>
           )}
@@ -377,7 +378,7 @@ function ShareBar() {
               <p className="subline text-sm">Nothing — quiet mode</p>
             ) : (
               <p className="flex items-center gap-1.5 text-sm">
-                <MoodDot color={moodColor(share.mood)} /> <span className="truncate">{share.song} — {share.artist}</span>
+                <MoodDot color={moodColor(share.mood)} /> <span className="truncate">{[share.song, share.artist].filter(Boolean).join(' — ') || moodLabel(share.mood)}</span>
               </p>
             )}
           </div>

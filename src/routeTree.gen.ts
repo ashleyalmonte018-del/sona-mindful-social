@@ -21,6 +21,7 @@ import { Route as AuthenticatedMakerspaceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
@@ -88,6 +89,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSetupRoute = AuthenticatedSetupRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
   id: '/studio',
   path: '/studio',
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/setup': typeof AuthenticatedSetupRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/setup': typeof AuthenticatedSetupRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
   '/_authenticated/zone': typeof AuthenticatedZoneRoute
@@ -193,6 +202,7 @@ export interface FileRouteTypes {
     | '/parent'
     | '/profile'
     | '/settings'
+    | '/setup'
     | '/studio'
     | '/vibe'
     | '/zone'
@@ -212,6 +222,7 @@ export interface FileRouteTypes {
     | '/parent'
     | '/profile'
     | '/settings'
+    | '/setup'
     | '/studio'
     | '/vibe'
     | '/zone'
@@ -232,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/parent'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
+    | '/_authenticated/setup'
     | '/_authenticated/studio'
     | '/_authenticated/vibe'
     | '/_authenticated/zone'
@@ -332,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/setup': {
+      id: '/_authenticated/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof AuthenticatedSetupRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/studio': {
       id: '/_authenticated/studio'
       path: '/studio'
@@ -387,6 +406,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
   AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
@@ -405,6 +425,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedVibeRoute: AuthenticatedVibeRoute,
   AuthenticatedZoneRoute: AuthenticatedZoneRoute,

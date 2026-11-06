@@ -34,7 +34,7 @@ describe("finite edition size", () => {
   });
 
   it("never returns more visible posts than the limit", () => {
-    const e = buildEdition(POSTS, base);
+    const e = buildEdition(Array.from({ length: 20 }, (_, i) => post({ id: String(i), subgenre: `genre-${i}` })), base);
     expect(e.posts.length).toBe(12);
     expect(e.posts.every((p) => p.verdict !== "hold")).toBe(true);
   });

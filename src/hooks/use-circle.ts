@@ -16,7 +16,7 @@ export interface CircleMember {
   quiet: boolean;
   allowsPlay: boolean;
   avatarPath: string | null;
-  /** Sample Sonas fill the pocket world until someone has a real circle. */
+  /** Kept for older game interfaces; members are always real accounts. */
   sample: boolean;
 }
 
@@ -56,6 +56,7 @@ export function useCircleTiers(myId: string) {
   const key = ["circle-tiers", myId];
   const query = useQuery({
     queryKey: key,
+    enabled: Boolean(myId),
     queryFn: async () => {
       const { data, error } = await supabase.from("circle_tier_members").select("member_id,tier").eq("owner_id", myId);
       if (error) throw error;
@@ -84,8 +85,8 @@ export function useCircleTiers(myId: string) {
       qc.setQueryData(key, next);
       return { prev };
     },
-    onError: (e: Error, _v, ctx) => {
-      if (ctx?.prev) qc.setQueryData(key, ctx.prev);
+    onError: (e: Error) => {
+      void qc.invalidateQueries({ queryKey: key });
       toast.error("Couldn't update that tier", { description: e.message });
     },
     onSettled: () => qc.invalidateQueries({ queryKey: key }),

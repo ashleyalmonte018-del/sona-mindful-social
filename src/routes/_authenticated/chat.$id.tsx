@@ -8,6 +8,11 @@ import { useSona } from "@/components/shell/SonaContext";
 import { useCircleMembers } from "@/hooks/use-circle";
 
 export const Route = createFileRoute("/_authenticated/chat/$id")({
+  head: () => ({ meta: [
+    { title: 'Circle chat — Sona' }, { name: 'description', content: 'Private conversations with your mutual Circle members.' },
+    { property: 'og:title', content: 'Circle chat — Sona' }, { property: 'og:description', content: 'A private conversation in your Circle.' },
+    { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary' },
+  ] }),
   component: () => <AppShell wide><ChatPage /></AppShell>,
 });
 
