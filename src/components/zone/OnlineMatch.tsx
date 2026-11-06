@@ -35,7 +35,16 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
 
   useEffect(() => {
     if (!match) return;
-    const channel = supabase.channel(`match:${match.id}:${crypto.randomUUID()}`).on("postgres_changes", { event: "UPDATE", schema: "public", table: "match_sessions", filter: `id=eq.${match.id}` }, (payload) => setMatch(payload.new as Match)).subscribe();
+    const channel = supabase.channel(`match:${match.id}:${crypto.randomUUID()}`).on("postgres_changes", { event: "UPDATE", schema: "public", table: "match_sessions", filter: `id=eq.${match.id}` }, (payload) => {
+      const next = payload.new as Match;
+      if (next.status === "cancelled") {
+        setInvites((old) => old.filter((invite) => invite.id !== next.id));
+        setMatchClosed(true);
+        setMatch(null);
+      } else {
+        setMatch(next);
+      }
+    }).subscribe();
     return () => { void supabase.removeChannel(channel); };
   }, [match?.id]);
 
@@ -90,7 +99,16 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     };
     void load();
     const timer = window.setInterval(() => void load(), 15_000);
-    const channel = supabase.channel(`match-invites:${myId}`).on("postgres_changes", { event: "*", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, () => void load()).subscribe();
+    const channel = supabase.channel(`match-invites:${myId}`).on("postgres_changes", { event: "*", schema: "public", table: "match_sessions", filter: `guest_id=eq.${myId}` }, (payload) => {
+      if (payload.eventType === "UPDATE" || payload.eventType === "DELETE") {
+        const next = (payload.eventType === "UPDATE" ? payload.new : payload.old) as Match;
+        if (payload.eventType === "DELETE" || next.status !== "waiting") {
+          setInvites((old) => old.filter((invite) => invite.id !== next.id));
+          return;
+        }
+      }
+      void load();
+    }).subscribe();
     return () => {
       window.clearInterval(timer);
       void supabase.removeChannel(channel);
@@ -118,13 +136,17 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
 
   async function accept(invite: Match) {
     setBusy(true);
-    const { error } = await supabase.from("match_sessions").update({ status: "active", updated_at: new Date().toISOString() }).eq("id", invite.id).eq("guest_id", myId);
+    const { data, error } = await supabase.from("match_sessions").update({ status: "active", updated_at: new Date().toISOString() }).eq("id", invite.id).eq("guest_id", myId).eq("status", "waiting").select("*").maybeSingle();
     setBusy(false);
     if (error) toast.error("Couldn't accept the game", { description: error.message });
+    else if (!data) {
+      setInvites((old) => old.filter((m) => m.id !== invite.id));
+      toast.info("That invitation is no longer available.");
+    }
     else {
       setInvites((old) => old.filter((m) => m.id !== invite.id));
       setMatchClosed(false);
-      setMatch({ ...invite, status: "active" });
+      setMatch(data as Match);
       void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("match_id", invite.id).eq("kind", "game_invite");
     }
   }
