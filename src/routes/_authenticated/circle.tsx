@@ -91,6 +91,7 @@ function CirclePage() {
   const [selected, setSelected] = useState<string>("me");
   const [game, setGame] = useState<(typeof GAMES)[number] | null>(null);
   const [opponent, setOpponent] = useState<string>("practice");
+  const [matchRound, setMatchRound] = useState(0);
 
   useEffect(() => {
     const n = visitors.length + 1;
@@ -283,7 +284,7 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id} players={players} fallback={<game.C players={players} />} showInvites={false} onClose={() => setGame(null)} />}
+              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}:${matchRound}`} myId={profile.id} opponentId={opponent} game={game.id} players={players} fallback={<game.C players={players} />} showInvites={false} onCancelled={() => setMatchRound((round) => round + 1)} />}
             </>
           )}
         </DialogContent>

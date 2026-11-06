@@ -13,13 +13,13 @@ import { cn } from "@/lib/utils";
 export type OnlineGameId = "ttt" | "rps" | "oe" | "dots";
 type GameState = { board?: Mark[] | undefined; turn?: string | undefined; winner?: string | null | undefined; moves?: Record<string, string> | undefined; result?: string | null | undefined; call?: Parity | undefined; fingers?: Record<string, number> | undefined; dots?: DotsState | undefined };
 type Match = { id: string; game: OnlineGameId; host_id: string; guest_id: string | null; state: GameState; status: string; updated_at: string };
-type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode; showInvites?: boolean; onClose?: () => void };
+type Props = { myId: string; opponentId?: string; game?: OnlineGameId; players?: Players; fallback?: ReactNode; showInvites?: boolean; onCancelled?: () => void };
 
 const emptyState = (game: OnlineGameId, host: string): GameState => game === "dots" ? { dots: newDots(3, 3), turn: host } : { board: Array(9).fill(null), turn: host, winner: null, moves: {}, fingers: {} };
 const gameLabel = (game: OnlineGameId) => ({ ttt: "Tic-Tac-Toe", rps: "Rock-Paper-Scissors", oe: "Odds and Evens", dots: "Dots and Boxes" })[game];
 const playerFor = (match: Match, id: string) => match.host_id === id ? 1 : 2;
 
-export function OnlineMatch({ myId, opponentId, game, players, fallback, showInvites = true, onClose }: Props) {
+export function OnlineMatch({ myId, opponentId, game, players, fallback, showInvites = true, onCancelled }: Props) {
   const [match, setMatch] = useState<Match | null>(null);
   const [busy, setBusy] = useState(false);
   const [invites, setInvites] = useState<Match[]>([]);
@@ -146,7 +146,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("match_id", match.id);
     setMatchClosed(true);
     setMatch(null);
-    onClose?.();
+    onCancelled?.();
   }
 
   async function save(state: GameState, status = "active") {
@@ -210,7 +210,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     {match?.status === "active" && match.game === "oe" && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{match.state.result ? match.state.result === "draw" ? "Tied!" : match.state.result === myId ? "You win!" : "Your friend wins!" : !match.state.call ? match.host_id === myId ? "Choose odds or evens." : "Waiting for the caller…" : match.state.turn === myId ? `Call: ${match.state.call}. Choose 1–5 fingers.` : "Waiting for your friend…"}</p>{!match.state.call && match.host_id === myId && <div className="grid grid-cols-2 gap-3"><Button variant="soft" onClick={() => void throwOdds("odds")}>Odds</Button><Button variant="soft" onClick={() => void throwOdds("evens")}>Evens</Button></div>}{match.state.call && <div className="grid grid-cols-5 gap-2">{[1,2,3,4,5].map((n) => <button key={n} disabled={match.state.turn !== myId || match.state.fingers?.[myId] != null || !!match.state.result} onClick={() => void throwOdds(undefined, n)} className="aspect-square rounded-2xl border-[3px] bg-card font-doodle text-2xl animate-pop">{n}</button>)}</div>}</div>}
     {match?.status === "active" && match.game === "dots" && match.state.dots && <div className="mt-4 space-y-4"><OnlineScoreboard players={players} match={match} /><p className="font-doodle text-lg">{match.state.result ? match.state.result === "draw" ? "Tied!" : match.state.result === myId ? "You win!" : "Your friend wins!" : match.state.dots.turn === playerFor(match, myId) ? "Your turn — draw a line" : "Their turn"}</p><DotsBoard state={match.state.dots} myTurn={match.state.dots.turn === playerFor(match, myId)} onLine={(line) => void drawLine(line)} /></div>}
     {match && match.status === "finished" && <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-secondary p-3"><p className="font-doodle">{match.state.result === "draw" ? "Tied game — recorded." : match.state.result === myId ? "Win recorded." : "Loss recorded."}</p><Button size="sm" variant="soft" onClick={() => void discardMatch()} disabled={busy}>Start a new match</Button></div>}
-    {match && (match.status === "waiting" || match.status === "active") && <Button className="mt-4" size="sm" variant="ghost" onClick={() => void discardMatch()} disabled={busy}>{match.status === "waiting" ? "Cancel invitation" : "Leave match"}</Button>}
+    {match && (match.status === "waiting" || match.status === "active") && <Button className="mt-4" size="sm" variant="ghost" onClick={() => void discardMatch()} disabled={busy}>Cancel match</Button>}
     {!match && !practice && (!showInvites || invites.length === 0) && <p className="mt-1 text-sm text-muted-foreground">Choose a Circle member above, then tap a game to invite them.</p>}
     {practice}
   </section>;
