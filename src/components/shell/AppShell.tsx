@@ -190,7 +190,9 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
         ) : (
           <SonaProvider value={{ profile, update }}>
             {setupRequired && location.pathname !== '/setup' ? <p className="subline py-12 text-center">Opening Set Up…</p> : children}
-            {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} notifications={sonaNotifications} />}
+            {(profile.settings.sonaEnabled || sonaNotifications.some((notification) => !notification.read)) && (
+              <SonaHelper minutesToday={minutesToday} notifications={sonaNotifications} />
+            )}
             {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}             {isLimitReached && (
               <div 
                 className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-md"

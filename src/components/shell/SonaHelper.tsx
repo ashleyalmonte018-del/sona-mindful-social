@@ -32,11 +32,13 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const [breathing, setBreathing] = useState(false);
   const [careNotification, setCareNotification] = useState(false);
   const [restDismissed, setRestDismissed] = useState(false);
-  const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
+  const [lastNotificationKey, setLastNotificationKey] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
   const unread = notifications.filter((notification) => !notification.read);
-  const newestUnread = unread[0];
+  const newestNotification = notifications[0];
+  const newestNotificationKey = newestNotification ? `${newestNotification.id}:${newestNotification.createdAt}` : null;
+  const newestNotificationUnread = Boolean(newestNotification && !newestNotification.read);
 
   useEffect(() => {
     // Reaching the daily guide should inform the care view, but must not
@@ -48,11 +50,12 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   }, [needsRest]);
 
   useEffect(() => {
-    if (!newestUnread || newestUnread.id === lastNotificationId) return;
-    setLastNotificationId(newestUnread.id);
+    if (!newestNotificationKey || newestNotificationKey === lastNotificationKey) return;
+    setLastNotificationKey(newestNotificationKey);
+    if (!newestNotificationUnread) return;
     setShowNotifications(true);
     setOpen(true);
-  }, [lastNotificationId, newestUnread]);
+  }, [lastNotificationKey, newestNotificationKey, newestNotificationUnread]);
 
   const pose = needsRest ? "rest" : "stand";
 
