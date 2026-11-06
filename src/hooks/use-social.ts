@@ -258,7 +258,7 @@ export async function copyPostLink(postId: string) {
 }
 
 /** Private buckets: everything is served through short-lived signed links. */
-export function useSignedUrl(bucket: "post-media" | "profile-media", path: string | null | undefined) {
+export function useSignedUrl(bucket: "post-media" | "profile-media" | "chat-backgrounds", path: string | null | undefined) {
   return useQuery({
     queryKey: ["signed", bucket, path],
     enabled: Boolean(path),
@@ -271,7 +271,7 @@ export function useSignedUrl(bucket: "post-media" | "profile-media", path: strin
   });
 }
 
-export async function uploadMedia(bucket: "post-media" | "profile-media", userId: string, body: Blob, ext: string) {
+export async function uploadMedia(bucket: "post-media" | "profile-media" | "chat-backgrounds", userId: string, body: Blob, ext: string) {
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, body, { upsert: false, ...(body.type ? { contentType: body.type } : {}) });
   if (error) throw error;
