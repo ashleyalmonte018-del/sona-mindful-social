@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Layers, Music2, Search, Tag } from "lucide-react";
+import { Layers, Music2, Tag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -270,7 +270,7 @@ function CirclePage() {
           <OnlineMatch myId={profile.id} />
         </div>
 
-        <CircleSidePanel members={real} usingSamples={usingSamples} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
+        <CircleSidePanel members={real} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
       </div>
 
       <Dialog open={!!game} onOpenChange={(o) => !o && setGame(null)}>
@@ -413,14 +413,12 @@ function ShareBar() {
 
 function CircleSidePanel({
   members,
-  usingSamples,
   loading,
   tierFilter,
   onTierFilter,
   tiers,
 }: {
   members: CircleMember[];
-  usingSamples: boolean;
   loading: boolean;
   tierFilter: TierId | "all";
   onTierFilter: (t: TierId | "all") => void;
@@ -520,15 +518,6 @@ function CircleSidePanel({
           <p className="eyebrow text-muted-foreground">Members</p>
           {loading ? (
             <p className="mt-2 text-sm text-muted-foreground">Loading your circle…</p>
-          ) : usingSamples ? (
-            <div className="mt-2 rounded-2xl bg-secondary p-4 text-sm">
-              <p>Your circle is people who follow each other. Once someone's in, you can sort them into tiers here.</p>
-              <Button asChild variant="pill" size="sm" className="mt-3">
-                <Link to="/people">
-                  <Search /> Find people
-                </Link>
-              </Button>
-            </div>
           ) : listed.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">Nobody in {tierFilter === "all" ? "your circle" : tierLabel(tierFilter)} yet.</p>
           ) : (
