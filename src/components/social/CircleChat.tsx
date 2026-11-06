@@ -17,6 +17,7 @@ type Message = {
   body: string;
   created_at: string;
 };
+type ChatDatabaseError = { code: string; message: string };
 const MAX_BACKGROUND_SIZE = 10 * 1024 * 1024;
 const timeFormat = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
 const dayFormat = new Intl.DateTimeFormat(undefined, {
@@ -53,6 +54,16 @@ function ChatAvatar({
 function dayKey(date: string) {
   const parsed = new Date(date);
   return `${parsed.getFullYear()}-${parsed.getMonth()}-${parsed.getDate()}`;
+}
+
+function chatErrorMessage(error: ChatDatabaseError) {
+  const missingTable =
+    error.code === "PGRST205" ||
+    error.code === "42P01" ||
+    /could not find table|relation .* does not exist|schema cache/i.test(error.message);
+  return missingTable
+    ? `Chat table is unavailable. Apply supabase/migrations/20261106060000_circle_chat_and_wallpapers.sql in the connected Supabase project, then reload. Database error (${error.code}): ${error.message}`
+    : `Couldn't load chat messages. Database error (${error.code}): ${error.message}`;
 }
 
 export function CircleChat({ members, myId }: { members: CircleMember[]; myId: string }) {
@@ -112,11 +123,7 @@ export function CircleChat({ members, myId }: { members: CircleMember[]; myId: s
         .limit(100);
       if (!active) return;
       if (error) {
-        setLoadError(
-          /circle_messages|schema cache|relation .* does not exist/i.test(error.message)
-            ? "Chat needs a database update. Apply the latest Supabase migration, then reload."
-            : error.message,
-        );
+        setLoadError(chatErrorMessage(error));
         return;
       }
       setLoadError(null);
@@ -150,12 +157,7 @@ export function CircleChat({ members, myId }: { members: CircleMember[]; myId: s
       .single();
     setBusy(false);
     if (error) {
-      const missing = /circle_messages|schema cache|relation .* does not exist/i.test(
-        error.message,
-      );
-      toast.error(missing ? "Chat needs a database update" : "Couldn't send that", {
-        description: missing ? "Apply the latest Supabase migration, then reload." : error.message,
-      });
+      toast.error("Couldn't send that", { description: chatErrorMessage(error) });
       return;
     }
     setBody("");
