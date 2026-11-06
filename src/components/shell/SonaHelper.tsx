@@ -36,9 +36,8 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
   const unread = notifications.filter((notification) => !notification.read);
-  const newestNotification = notifications[0];
-  const newestNotificationKey = newestNotification ? `${newestNotification.id}:${newestNotification.createdAt}` : null;
-  const newestNotificationUnread = Boolean(newestNotification && !newestNotification.read);
+  const newestUnread = unread[0];
+  const newestNotificationKey = newestUnread ? `${newestUnread.id}:${newestUnread.createdAt}` : null;
 
   useEffect(() => {
     // Reaching the daily guide should inform the care view, but must not
@@ -52,10 +51,9 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   useEffect(() => {
     if (!newestNotificationKey || newestNotificationKey === lastNotificationKey) return;
     setLastNotificationKey(newestNotificationKey);
-    if (!newestNotificationUnread) return;
     setShowNotifications(true);
     setOpen(true);
-  }, [lastNotificationKey, newestNotificationKey, newestNotificationUnread]);
+  }, [lastNotificationKey, newestNotificationKey]);
 
   const pose = needsRest ? "rest" : "stand";
 

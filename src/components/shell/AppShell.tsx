@@ -62,10 +62,10 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
   useEffect(() => {
     if (!profile?.id) return;
     const channel = supabase.channel(`game-notifications:${profile.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications" }, () => {
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
         void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
       })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications" }, () => {
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
         void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
       })
       .subscribe();
