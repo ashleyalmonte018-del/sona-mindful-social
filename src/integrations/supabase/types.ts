@@ -65,6 +65,47 @@ export type Database = {
         }
         Relationships: []
       }
+      game_results: {
+        Row: {
+          created_at: string
+          game: string
+          id: string
+          loser_id: string | null
+          match_id: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id?: string
+          player_b_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_results_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -154,6 +195,42 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          shared_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          shared_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          shared_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_shares_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -368,6 +445,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      public_post_link: { Args: { _post: string }; Returns: boolean }
       reaches_public_feed: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -382,6 +460,32 @@ export type Database = {
           is_public: boolean
         }[]
       }
+      share_post: { Args: { _post: string }; Returns: string }
+      shared_feed_posts: {
+        Args: { _limit?: number }
+        Returns: {
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          disclosure_note: string | null
+          disclosures: Json
+          id: string
+          image_path: string | null
+          is_shareable: boolean
+          labels: Json
+          media_type: string
+          topics: string[]
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_posts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      shared_post_card: { Args: { _post: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
