@@ -58,11 +58,12 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     const start = async () => {
       setBusy(true);
       const findExisting = async () => Promise.all([
-        supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", myId).eq("guest_id", opponentId).in("status", ["waiting", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", opponentId).eq("guest_id", myId).in("status", ["waiting", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+        supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", myId).eq("guest_id", opponentId).in("status", ["waiting", "active"]).order("created_at", { ascending: true }).limit(10),
+        supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", opponentId).eq("guest_id", myId).in("status", ["waiting", "active"]).order("created_at", { ascending: true }).limit(10),
       ]);
       const [mine, theirs] = await findExisting();
-      const existing = mine.data ?? theirs.data;
+      const existing = [...(mine.data ?? []), ...(theirs.data ?? [])]
+        .sort((a, b) => (a.status === "active" ? -1 : 1) - (b.status === "active" ? -1 : 1) || a.created_at.localeCompare(b.created_at))[0];
       const created = existing ? null : await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: emptyState(game, myId) as unknown as Json }).select("*").single();
       let data = existing ?? created?.data;
       let error = existing ? null : mine.error ?? theirs.error ?? created?.error;
@@ -99,7 +100,11 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
         setDatabaseError(/match_sessions|schema cache|relation .* does not exist/i.test(error.message));
         return;
       }
-      setInvites((data ?? []) as Match[]);
+      const uniqueByGame = new Map<string, Match>();
+      for (const invite of (data ?? []) as Match[]) {
+        if (!uniqueByGame.has(invite.game)) uniqueByGame.set(invite.game, invite);
+      }
+      setInvites([...uniqueByGame.values()]);
     };
     void load();
     const timer = window.setInterval(() => void load(), 15_000);
