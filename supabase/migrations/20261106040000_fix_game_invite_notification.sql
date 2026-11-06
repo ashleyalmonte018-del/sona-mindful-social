@@ -14,11 +14,11 @@ begin
     return false;
   end if;
 
-  select m.guest_id
+  select case when m.host_id = auth.uid() then m.guest_id else m.host_id end
     into recipient
   from public.match_sessions m
   where m.id = _match_id
-    and m.host_id = auth.uid()
+    and (m.host_id = auth.uid() or m.guest_id = auth.uid())
     and m.status = 'waiting'
     and m.guest_id is not null
     and public.are_friends(m.host_id, m.guest_id);
