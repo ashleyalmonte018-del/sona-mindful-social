@@ -25,7 +25,6 @@ create policy "Participants can send game invite notifications" on public.notifi
     select 1 from public.match_sessions m
     where m.id = match_id and m.status = 'waiting'
       and (m.host_id = auth.uid() or m.guest_id = auth.uid())
-      and public.are_friends(m.host_id, m.guest_id)
       and recipient_id = case when m.host_id = auth.uid() then m.guest_id else m.host_id end
   )
 );
@@ -39,7 +38,7 @@ begin
   select case when m.host_id = auth.uid() then m.guest_id else m.host_id end into recipient
   from public.match_sessions m
   where m.id = _match_id and (m.host_id = auth.uid() or m.guest_id = auth.uid())
-    and m.status = 'waiting' and m.guest_id is not null and public.are_friends(m.host_id, m.guest_id);
+    and m.status = 'waiting' and m.guest_id is not null;
   if recipient is null then return false; end if;
   insert into public.notifications (recipient_id, kind, title, body, match_id)
   values (recipient, 'game_invite', 'New Circle game invitation', 'Someone in your Circle invited you to a game match.', _match_id)

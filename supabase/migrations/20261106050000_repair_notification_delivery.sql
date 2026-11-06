@@ -42,7 +42,6 @@ create policy "Participants can send game invite notifications"
       where m.id = match_id
         and m.status = 'waiting'
         and (m.host_id = auth.uid() or m.guest_id = auth.uid())
-        and public.are_friends(m.host_id, m.guest_id)
         and recipient_id = case when m.host_id = auth.uid() then m.guest_id else m.host_id end
     )
   );
@@ -69,7 +68,7 @@ begin
     and (m.host_id = auth.uid() or m.guest_id = auth.uid())
     and m.status = 'waiting'
     and m.guest_id is not null
-    and public.are_friends(m.host_id, m.guest_id);
+    ;
 
   if recipient is null then return false; end if;
 

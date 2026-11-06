@@ -31,6 +31,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const [showNotifications, setShowNotifications] = useState(false);
   const [breathing, setBreathing] = useState(false);
   const [careNotification, setCareNotification] = useState(false);
+  const [restDismissed, setRestDismissed] = useState(false);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
@@ -38,10 +39,10 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const newestUnread = unread[0];
 
   useEffect(() => {
-    if (sessionStorage.getItem("sona.helperShown")) return;
-    if (needsRest) {
+    // Reaching the daily guide should inform the care view, but must not
+    // hijack the notification center or leave it opened on the time widget.
+    if (needsRest && !sessionStorage.getItem("sona.helperShown")) {
       setCareNotification(true);
-      setOpen(true);
       sessionStorage.setItem("sona.helperShown", "1");
     }
   }, [needsRest]);
@@ -79,7 +80,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
             </div>
           )}
           {breathing ? (
-            <BreathingPrompt seconds={30} onDone={() => { setBreathing(false); setCareNotification(false); setOpen(false); }} className="mt-4" />
+            <BreathingPrompt seconds={30} onDone={() => { setBreathing(false); setCareNotification(false); setRestDismissed(true); setOpen(false); }} className="mt-4" />
           ) : showNotifications && notifications.length > 0 ? (
             <div className="mt-2">
               <div className="flex items-center justify-between gap-2">
@@ -104,14 +105,14 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
                 </div>
               ) : <p className="mt-3 text-muted-foreground">No notifications yet.</p>}
             </div>
-          ) : needsRest ? (
+          ) : needsRest && !restDismissed ? (
             <>
               <p className="mt-2">
                 You've been here {minutesToday} minutes today. Around {DAILY_GUIDE_MIN} a day is a healthy baseline — time for a rest?
               </p>
               <div className="mt-3 flex gap-2">
                 <Button size="sm" variant="lime" onClick={() => setBreathing(true)}>Take a breather</Button>
-                <Button size="sm" variant="soft" onClick={() => setOpen(false)}>Later</Button>
+                <Button size="sm" variant="soft" onClick={() => { setRestDismissed(true); setCareNotification(false); setOpen(false); }}>Later</Button>
               </div>
             </>
           ) : (

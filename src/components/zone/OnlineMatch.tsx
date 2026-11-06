@@ -185,7 +185,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     // RPC yet. The insert policy in the repair migration applies the same
     // participant checks, so the action can still work while PostgREST's
     // function schema cache catches up.
-    const canUseDirectFallback = Boolean(recipientId && error && /send_game_invite_notification|public\.notifications|schema cache|relation .* does not exist|function .* does not exist/i.test(error.message));
+    const canUseDirectFallback = Boolean(recipientId && (data !== true || (error && /send_game_invite_notification|public\.notifications|schema cache|relation .* does not exist|function .* does not exist/i.test(error.message))));
     if (canUseDirectFallback && recipientId) {
       const fallback = await supabase.from("notifications").insert({
         recipient_id: recipientId,
