@@ -283,7 +283,7 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id} players={players} fallback={<game.C players={players} />} showInvites={false} />}
+              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}`} myId={profile.id} opponentId={opponent} game={game.id} players={players} fallback={<game.C players={players} />} showInvites={false} onClose={() => setGame(null)} />}
             </>
           )}
         </DialogContent>
