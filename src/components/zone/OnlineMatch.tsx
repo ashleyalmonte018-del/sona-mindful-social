@@ -43,20 +43,34 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     let active = true;
     const start = async () => {
       setBusy(true);
-      const [mine, theirs] = await Promise.all([
+      const findExisting = async () => Promise.all([
         supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", myId).eq("guest_id", opponentId).in("status", ["waiting", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
         supabase.from("match_sessions").select("*").eq("game", game).eq("host_id", opponentId).eq("guest_id", myId).in("status", ["waiting", "active"]).order("created_at", { ascending: false }).limit(1).maybeSingle(),
       ]);
+      const [mine, theirs] = await findExisting();
       const existing = mine.data ?? theirs.data;
       const created = existing ? null : await supabase.from("match_sessions").insert({ game, host_id: myId, guest_id: opponentId, state: emptyState(game, myId) as unknown as Json }).select("*").single();
-      const data = existing ?? created?.data;
-      const error = existing ? null : mine.error ?? theirs.error ?? created?.error;
+      let data = existing ?? created?.data;
+      let error = existing ? null : mine.error ?? theirs.error ?? created?.error;
+
+      // Two clients can pass the initial lookup at the same time. If the
+      // unique index wins that race, attach to the one match that already
+      // exists instead of showing a second invitation/error.
+      if (!data && created?.error?.code === "23505") {
+        const [retryMine, retryTheirs] = await findExisting();
+        data = retryMine.data ?? retryTheirs.data;
+        error = data ? null : created.error;
+      }
       if (!active) return;
       setBusy(false);
       if (error) {
         const missing = /match_sessions|schema cache|relation .* does not exist/i.test(error.message);
         setDatabaseError(missing);
-        toast.error(missing ? "Games need one database update" : "Couldn't invite that Circle member", { description: error.message });
+        const alreadyPlaying = error.code === "23505";
+        toast.error(
+          missing ? "Games need one database update" : alreadyPlaying ? "One of you is already in this game" : "Couldn't invite that Circle member",
+          { description: missing || alreadyPlaying ? undefined : error.message },
+        );
       } else if (data) setMatch(data as Match);
     };
     void start();
@@ -106,7 +120,11 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     const { error } = await supabase.from("match_sessions").update({ status: "active", updated_at: new Date().toISOString() }).eq("id", invite.id).eq("guest_id", myId);
     setBusy(false);
     if (error) toast.error("Couldn't accept the game", { description: error.message });
-    else { setInvites((old) => old.filter((m) => m.id !== invite.id)); setMatch({ ...invite, status: "active" }); }
+    else {
+      setInvites((old) => old.filter((m) => m.id !== invite.id));
+      setMatch({ ...invite, status: "active" });
+      void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("match_id", invite.id).eq("kind", "game_invite");
+    }
   }
 
   async function save(state: GameState, status = "active") {
