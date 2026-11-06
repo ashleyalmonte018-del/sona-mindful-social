@@ -25,7 +25,7 @@ export interface SonaNotification {
   onOpen?: () => void;
 }
 
-/** The floating Sona buddy: daily check-ins and rest nudges. */
+/** The floating Sona buddy and the Sona Notification Center. */
 export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minutesToday: number; onRest: () => void; notifications?: SonaNotification[] }) {
   const { profile } = useSona();
   const { checkedInToday, log, isLoading } = useMoods();
@@ -59,7 +59,10 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
       {open && (
         <div className="w-72 rounded-3xl border border-border bg-popover p-4 text-sm shadow-float animate-pop">
           <div className="flex items-start justify-between gap-2">
-            <p className="eyebrow text-muted-foreground">{profile.look.name || "Your Sona"}</p>
+            <div>
+              <p className="eyebrow text-muted-foreground">Sona Notification Center</p>
+              <p className="mt-1 text-xs text-muted-foreground">{profile.look.name || "Your Sona"}</p>
+            </div>
             <button onClick={() => setOpen(false)} aria-label="Close" className="text-muted-foreground hover:text-foreground">
               <X className="size-4" />
             </button>
@@ -80,6 +83,30 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
               <button className="mt-3 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setHistoryOpen(true)}>
                 View notification history
               </button>
+            </div>
+          ) : historyOpen || notifications.length > 0 ? (
+            <div className="mt-2">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium">All notifications</p>
+                {unread.length > 0 && <span className="rounded-full bg-lime px-2 py-0.5 text-[0.65rem] text-lime-foreground">{unread.length} new</span>}
+              </div>
+              {notifications.length > 0 ? (
+                <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
+                  {notifications.map((notification) => (
+                    <button
+                      key={notification.id}
+                      className="w-full rounded-2xl bg-secondary p-3 text-left transition hover:bg-secondary/70"
+                      onClick={() => { notification.onOpen?.(); setOpen(false); }}
+                    >
+                      <p className="font-medium">{notification.title}</p>
+                      <p className="mt-1 text-xs text-muted-foreground">{notification.body}</p>
+                      <time className="mt-2 block text-[0.65rem] text-muted-foreground" dateTime={notification.createdAt}>
+                        {new Date(notification.createdAt).toLocaleString()}
+                      </time>
+                    </button>
+                  ))}
+                </div>
+              ) : <p className="mt-3 text-muted-foreground">No notifications yet.</p>}
             </div>
           ) : needsRest ? (
             <>
@@ -104,34 +131,15 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
                 />
               </div>
             </>
-          ) : notifications.length > 0 ? (
-            <div className="mt-2">
-              <p className="font-medium">Notification history</p>
-              <div className="mt-2 max-h-64 space-y-2 overflow-y-auto pr-1">
-                {notifications.map((notification) => (
-                  <button
-                    key={notification.id}
-                    className="w-full rounded-2xl bg-secondary p-3 text-left transition hover:bg-secondary/70"
-                    onClick={() => { notification.onOpen?.(); setOpen(false); }}
-                  >
-                    <p className="font-medium">{notification.title}</p>
-                    <p className="mt-1 text-xs text-muted-foreground">{notification.body}</p>
-                    <time className="mt-2 block text-[0.65rem] text-muted-foreground" dateTime={notification.createdAt}>
-                      {new Date(notification.createdAt).toLocaleString()}
-                    </time>
-                  </button>
-                ))}
-              </div>
-            </div>
           ) : (
             <p className="mt-2">{tip}</p>
           )}
         </div>
       )}
       <button
-        onClick={() => { setOpen((o) => !o); setHistoryOpen(false); }}
+        onClick={() => { setOpen((o) => !o); setHistoryOpen(notifications.length > 0); }}
         className="group relative rounded-full"
-        aria-label={open ? "Hide your Sona" : "Talk to your Sona"}
+        aria-label={open ? "Close Sona Notification Center" : "Open Sona Notification Center"}
       >
         {(needsCheckIn || needsRest || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
         <SonaFigure look={profile.look} doodle={profile.doodle} pose={pose} className="w-16 animate-bob transition group-hover:scale-105" />

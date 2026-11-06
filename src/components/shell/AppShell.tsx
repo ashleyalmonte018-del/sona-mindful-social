@@ -64,7 +64,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     return () => { void supabase.removeChannel(channel); };
   }, [profile?.id, notificationClient]);
 
-  // Follow-request notifications: a badge on Profile, plus a gentle toast when a new one arrives.
+  // Follow requests are included in the Sona Notification Center alongside persisted notifications.
   const requests = useFollowRequests(profile?.id, { poll: true });
   const pendingCount = requests.data?.length ?? 0;
 
