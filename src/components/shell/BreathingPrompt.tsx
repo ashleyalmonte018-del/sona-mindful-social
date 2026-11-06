@@ -6,9 +6,8 @@ import { cn } from "@/lib/utils";
 export function BreathingPrompt({ seconds = 5, onDone, className }: { seconds?: number; onDone: () => void; className?: string }) {
   const [left, setLeft] = useState(seconds);
   useEffect(() => {
-    const end = Date.now() + seconds * 1000;
     setLeft(seconds);
-    const tick = window.setInterval(() => setLeft(Math.max(0, Math.ceil((end - Date.now()) / 1000))), 250);
+    const tick = window.setInterval(() => setLeft((current) => Math.max(0, current - 1)), 1000);
     const done = window.setTimeout(() => {
       window.clearInterval(tick);
       setLeft(0);
