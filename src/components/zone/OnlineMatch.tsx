@@ -176,7 +176,39 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
   async function notifyFriend() {
     if (!match || match.status !== "waiting" || (match.host_id !== myId && match.guest_id !== myId)) return;
     setBusy(true);
-    const { data, error } = await supabase.rpc("send_game_invite_notification", { _match_id: match.id });
+    const recipientId = match.host_id === myId ? match.guest_id : match.host_id;
+    const rpcResult = await supabase.rpc("send_game_invite_notification", { _match_id: match.id });
+    let data = rpcResult.data;
+    let error = rpcResult.error;
+
+    // Older connected projects may have the notifications table but not the
+    // RPC yet. The insert policy in the repair migration applies the same
+    // participant checks, so the action can still work while PostgREST's
+    // function schema cache catches up.
+    if (error?.code === "PGRST202" && recipientId) {
+      const fallback = await supabase.from("notifications").insert({
+        recipient_id: recipientId,
+        kind: "game_invite",
+        title: "New Circle game invitation",
+        body: "Someone in your Circle invited you to a game match.",
+        match_id: match.id,
+      });
+      if (!fallback.error) {
+        data = true;
+        error = null;
+      } else if (fallback.error.code === "23505") {
+        const resent = await supabase
+          .from("notifications")
+          .update({ read_at: null, created_at: new Date().toISOString() })
+          .eq("recipient_id", recipientId)
+          .eq("match_id", match.id)
+          .eq("kind", "game_invite");
+        if (!resent.error) {
+          data = true;
+          error = null;
+        }
+      }
+    }
     setBusy(false);
     if (error) {
       const missingFunction = error.code === "PGRST202" || /send_game_invite_notification|schema cache|function .* does not exist/i.test(error.message);

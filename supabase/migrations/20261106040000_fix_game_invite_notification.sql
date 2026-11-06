@@ -47,4 +47,29 @@ end;
 $$;
 
 grant execute on function public.send_game_invite_notification(uuid) to authenticated;
+
+-- Keep the browser flow recoverable while PostgREST catches up with the
+-- function definition. This policy is just as restrictive as the function:
+-- only a participant in a waiting match can notify the other participant.
+grant insert on public.notifications to authenticated;
+drop policy if exists "Participants can send game invite notifications" on public.notifications;
+create policy "Participants can send game invite notifications"
+  on public.notifications for insert to authenticated
+  with check (
+    kind = 'game_invite'
+    and public.notifications.match_id is not null
+    and exists (
+      select 1
+      from public.match_sessions m
+      where m.id = public.notifications.match_id
+        and m.status = 'waiting'
+        and (m.host_id = auth.uid() or m.guest_id = auth.uid())
+        and public.are_friends(m.host_id, m.guest_id)
+        and public.notifications.recipient_id = case
+          when m.host_id = auth.uid() then m.guest_id
+          else m.host_id
+        end
+    )
+  );
+
 notify pgrst, 'reload schema';
