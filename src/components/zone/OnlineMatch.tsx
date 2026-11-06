@@ -211,7 +211,7 @@ export function OnlineMatch({ myId, opponentId, game, players, fallback, showInv
     }
     setBusy(false);
     if (error) {
-      const missingFunction = error.code === "PGRST202" || /send_game_invite_notification|schema cache|function .* does not exist/i.test(error.message);
+      const missingFunction = error.code === "PGRST202" || /send_game_invite_notification|public\.notifications|schema cache|relation .* does not exist|function .* does not exist/i.test(error.message);
       toast.error(missingFunction ? "Database update needed" : "Couldn't notify your friend", {
         description: missingFunction ? `${error.message} Confirm the function exists in the connected Supabase project, then reload its schema cache.` : error.message,
       });
