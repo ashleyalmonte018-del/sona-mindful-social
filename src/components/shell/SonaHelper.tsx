@@ -1,4 +1,4 @@
-import { Bell, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
   const { profile } = useSona();
   const { checkedInToday, log, isLoading } = useMoods();
   const [open, setOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
@@ -49,6 +49,7 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
   useEffect(() => {
     if (!newestUnread || newestUnread.id === lastNotificationId) return;
     setLastNotificationId(newestUnread.id);
+    setShowNotifications(true);
     setOpen(true);
   }, [lastNotificationId, newestUnread]);
 
@@ -67,24 +68,17 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
               <X className="size-4" />
             </button>
           </div>
-          {newestUnread && !historyOpen ? (
-            <div className="mt-2">
-              <div className="flex items-center gap-2 text-lime-foreground">
-                <Bell className="size-4" />
-                <span className="eyebrow">New notification</span>
-              </div>
-              <button
-                className="mt-2 w-full rounded-2xl bg-secondary p-3 text-left transition hover:bg-secondary/70"
-                onClick={() => { newestUnread.onOpen?.(); setOpen(false); }}
-              >
-                <p className="font-medium">{newestUnread.title}</p>
-                <p className="mt-1 text-muted-foreground">{newestUnread.body}</p>
+          {notifications.length > 0 && (
+            <div className="mt-3 flex gap-1 rounded-full bg-secondary p-1">
+              <button className={`flex-1 rounded-full px-2 py-1 text-xs ${showNotifications ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`} onClick={() => setShowNotifications(true)}>
+                Notifications{unread.length > 0 ? ` (${unread.length})` : ""}
               </button>
-              <button className="mt-3 text-xs text-muted-foreground underline-offset-2 hover:underline" onClick={() => setHistoryOpen(true)}>
-                View notification history
+              <button className={`flex-1 rounded-full px-2 py-1 text-xs ${!showNotifications ? "bg-card font-medium shadow-sm" : "text-muted-foreground"}`} onClick={() => setShowNotifications(false)}>
+                Sona care
               </button>
             </div>
-          ) : historyOpen || notifications.length > 0 ? (
+          )}
+          {showNotifications && notifications.length > 0 ? (
             <div className="mt-2">
               <div className="flex items-center justify-between gap-2">
                 <p className="font-medium">All notifications</p>
@@ -137,7 +131,7 @@ export function SonaHelper({ minutesToday, onRest, notifications = [] }: { minut
         </div>
       )}
       <button
-        onClick={() => { setOpen((o) => !o); setHistoryOpen(notifications.length > 0); }}
+        onClick={() => { setOpen((o) => !o); setShowNotifications(notifications.length > 0); }}
         className="group relative rounded-full"
         aria-label={open ? "Close Sona Notification Center" : "Open Sona Notification Center"}
       >
