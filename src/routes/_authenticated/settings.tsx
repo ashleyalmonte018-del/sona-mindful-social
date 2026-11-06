@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, HeartHandshake, KeyRound, Mail, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +50,13 @@ function Settings() {
   const [passwordBusy, setPasswordBusy] = useState(false);
   const locked = profile.ageMode === "sapling" && !!profile.passcodeHash;
 
+  useEffect(() => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "USER_UPDATED" && session?.user.email) setAccountEmail(session.user.email);
+    });
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
   function pickAge(m: AgeMode) {
     if (m === profile.ageMode) return;
     if (locked) setPending(m);
@@ -81,7 +88,10 @@ function Settings() {
     }
     setEmailBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser({ email: nextEmail });
+      const { error } = await supabase.auth.updateUser(
+        { email: nextEmail },
+        { emailRedirectTo: `${window.location.origin}/settings` },
+      );
       if (error) throw error;
       setEmailSent(true);
       toast.success("Check your inbox to confirm the new email.");
