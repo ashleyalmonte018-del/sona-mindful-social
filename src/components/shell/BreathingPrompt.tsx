@@ -2,17 +2,23 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-/** A 5-second structural breath. Calls onDone when the breath completes. */
+/** A timed structural breath. Calls onDone exactly when the requested duration ends. */
 export function BreathingPrompt({ seconds = 5, onDone, className }: { seconds?: number; onDone: () => void; className?: string }) {
   const [left, setLeft] = useState(seconds);
   useEffect(() => {
-    if (left <= 0) {
+    const end = Date.now() + seconds * 1000;
+    setLeft(seconds);
+    const tick = window.setInterval(() => setLeft(Math.max(0, Math.ceil((end - Date.now()) / 1000))), 250);
+    const done = window.setTimeout(() => {
+      window.clearInterval(tick);
+      setLeft(0);
       onDone();
-      return;
-    }
-    const t = window.setTimeout(() => setLeft((l) => l - 1), 1000);
-    return () => window.clearTimeout(t);
-  }, [left, onDone]);
+    }, seconds * 1000);
+    return () => {
+      window.clearInterval(tick);
+      window.clearTimeout(done);
+    };
+  }, [seconds, onDone]);
   const phase = left > seconds / 2 ? "Breathe in…" : "…and out";
   return (
     <div className={cn("flex flex-col items-center text-center", className)} role="status" aria-live="polite">

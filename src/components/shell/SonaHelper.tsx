@@ -30,6 +30,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   const [open, setOpen] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [breathing, setBreathing] = useState(false);
+  const [careNotification, setCareNotification] = useState(false);
   const [lastNotificationId, setLastNotificationId] = useState<string | null>(null);
   const [tip] = useState(() => TIPS[Math.floor(Math.random() * TIPS.length)]);
   const needsRest = minutesToday >= DAILY_GUIDE_MIN;
@@ -39,6 +40,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
   useEffect(() => {
     if (sessionStorage.getItem("sona.helperShown")) return;
     if (needsRest) {
+      setCareNotification(true);
       setOpen(true);
       sessionStorage.setItem("sona.helperShown", "1");
     }
@@ -76,7 +78,9 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
               </button>
             </div>
           )}
-          {showNotifications && notifications.length > 0 ? (
+          {breathing ? (
+            <BreathingPrompt seconds={30} onDone={() => { setBreathing(false); setCareNotification(false); setOpen(false); }} className="mt-4" />
+          ) : showNotifications && notifications.length > 0 ? (
             <div className="mt-2">
               <div className="flex items-center justify-between gap-2">
                 <p className="font-medium">All notifications</p>
@@ -100,8 +104,6 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
                 </div>
               ) : <p className="mt-3 text-muted-foreground">No notifications yet.</p>}
             </div>
-          ) : breathing ? (
-            <BreathingPrompt seconds={30} onDone={() => setBreathing(false)} className="mt-4" />
           ) : needsRest ? (
             <>
               <p className="mt-2">
@@ -122,7 +124,7 @@ export function SonaHelper({ minutesToday, notifications = [] }: { minutesToday:
         className="group relative rounded-full"
         aria-label={open ? "Close Sona Notification Center" : "Open Sona Notification Center"}
       >
-        {(needsRest || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
+        {(careNotification || unread.length > 0) && !open && <span className="absolute right-1 top-1 size-3 rounded-full border-2 border-background bg-lime" />}
         <SonaFigure look={profile.look} doodle={profile.doodle} pose={pose} className="w-16 animate-bob transition group-hover:scale-105" />
       </button>
     </div>
