@@ -136,6 +136,32 @@ export type Database = {
         }
         Relationships: []
       }
+      match_hidden_picks: {
+        Row: {
+          match_id: string
+          pick: string
+          player_id: string
+        }
+        Insert: {
+          match_id: string
+          pick: string
+          player_id: string
+        }
+        Update: {
+          match_id?: string
+          pick?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_hidden_picks_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       match_sessions: {
         Row: {
           created_at: string
@@ -198,31 +224,37 @@ export type Database = {
       }
       notifications: {
         Row: {
+          actor_id: string | null
           body: string
           created_at: string
           id: string
           kind: string
           match_id: string | null
+          post_id: string | null
           read_at: string | null
           recipient_id: string
           title: string
         }
         Insert: {
+          actor_id?: string | null
           body: string
           created_at?: string
           id?: string
           kind: string
           match_id?: string | null
+          post_id?: string | null
           read_at?: string | null
           recipient_id: string
           title: string
         }
         Update: {
+          actor_id?: string | null
           body?: string
           created_at?: string
           id?: string
           kind?: string
           match_id?: string | null
+          post_id?: string | null
           read_at?: string | null
           recipient_id?: string
           title?: string
@@ -242,18 +274,21 @@ export type Database = {
           created_at: string
           id: string
           post_id: string
+          recipient_id: string | null
           shared_by: string
         }
         Insert: {
           created_at?: string
           id?: string
           post_id: string
+          recipient_id?: string | null
           shared_by: string
         }
         Update: {
           created_at?: string
           id?: string
           post_id?: string
+          recipient_id?: string | null
           shared_by?: string
         }
         Relationships: [
@@ -272,6 +307,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      post_tiers: {
+        Row: {
+          owner_id: string
+          post_id: string
+          tier: string
+        }
+        Insert: {
+          owner_id: string
+          post_id: string
+          tier: string
+        }
+        Update: {
+          owner_id?: string
+          post_id?: string
+          tier?: string
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
@@ -417,6 +470,10 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_see_post: {
+        Args: { _post: string; _viewer: string }
+        Returns: boolean
+      }
       can_view_gallery: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -437,6 +494,8 @@ export type Database = {
           song: string
         }[]
       }
+      create_match: { Args: { _game: string; _guest: string }; Returns: string }
+      decline_match: { Args: { _match: string }; Returns: undefined }
       followers_list: {
         Args: { _owner: string }
         Returns: {
@@ -451,6 +510,18 @@ export type Database = {
         Returns: boolean
       }
       is_public_profile: { Args: { _uid: string }; Returns: boolean }
+      join_match: { Args: { _match: string }; Returns: undefined }
+      match_move: { Args: { _match: string; _move: string }; Returns: Json }
+      notify_match: {
+        Args: {
+          _body: string
+          _kind: string
+          _match: string
+          _title: string
+          _to: string
+        }
+        Returns: undefined
+      }
       people_cards: {
         Args: { _ids: string[] }
         Returns: {
@@ -460,6 +531,10 @@ export type Database = {
           handle: string
           id: string
         }[]
+      }
+      post_tier_ok: {
+        Args: { _owner: string; _post: string; _viewer: string }
+        Returns: boolean
       }
       profile_card: { Args: { _id: string }; Returns: Json }
       public_feed_posts: {
@@ -506,6 +581,10 @@ export type Database = {
         Returns: boolean
       }
       share_post: { Args: { _post: string }; Returns: string }
+      share_post_to: {
+        Args: { _post: string; _recipient: string }
+        Returns: boolean
+      }
       shared_feed_posts: {
         Args: { _limit?: number }
         Returns: {
@@ -531,6 +610,7 @@ export type Database = {
         }
       }
       shared_post_card: { Args: { _post: string }; Returns: Json }
+      ttt_winner: { Args: { b: Json }; Returns: string }
     }
     Enums: {
       [_ in never]: never
