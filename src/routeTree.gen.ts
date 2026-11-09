@@ -24,6 +24,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
+import { Route as PPostIdRouteImport } from './routes/p.$postId'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
 import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
 
@@ -102,6 +103,11 @@ const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
   path: '/zone',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const PPostIdRoute = PPostIdRouteImport.update({
+  id: '/p/$postId',
+  path: '/p/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedPeopleIndexRoute =
   AuthenticatedPeopleIndexRouteImport.update({
     id: '/people/',
@@ -129,6 +135,7 @@ export interface FileRoutesByFullPath {
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
+  '/p/$postId': typeof PPostIdRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -147,6 +154,7 @@ export interface FileRoutesByTo {
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
+  '/p/$postId': typeof PPostIdRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/people': typeof AuthenticatedPeopleIndexRoute
 }
@@ -167,6 +175,7 @@ export interface FileRoutesById {
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
   '/_authenticated/zone': typeof AuthenticatedZoneRoute
+  '/p/$postId': typeof PPostIdRoute
   '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
   '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -187,6 +196,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/vibe'
     | '/zone'
+    | '/p/$postId'
     | '/people/$id'
     | '/people/'
   fileRoutesByTo: FileRoutesByTo
@@ -205,6 +215,7 @@ export interface FileRouteTypes {
     | '/studio'
     | '/vibe'
     | '/zone'
+    | '/p/$postId'
     | '/people/$id'
     | '/people'
   id:
@@ -224,6 +235,7 @@ export interface FileRouteTypes {
     | '/_authenticated/studio'
     | '/_authenticated/vibe'
     | '/_authenticated/zone'
+    | '/p/$postId'
     | '/_authenticated/people/$id'
     | '/_authenticated/people/'
   fileRoutesById: FileRoutesById
@@ -232,6 +244,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  PPostIdRoute: typeof PPostIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -341,6 +354,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedZoneRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/p/$postId': {
+      id: '/p/$postId'
+      path: '/p/$postId'
+      fullPath: '/p/$postId'
+      preLoaderRoute: typeof PPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/people/': {
       id: '/_authenticated/people/'
       path: '/people'
@@ -399,6 +419,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  PPostIdRoute: PPostIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

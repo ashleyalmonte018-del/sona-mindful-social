@@ -71,6 +71,7 @@ export interface UserPost {
   note: string | null;
   labels: string[];
   createdAt: string;
+  isShareable: boolean;
 }
 
 type PostRow = {
@@ -84,6 +85,7 @@ type PostRow = {
   disclosure_note: string | null;
   labels: unknown;
   created_at: string;
+  is_shareable?: boolean | null;
 };
 
 export function parseDisclosures(raw: unknown): Disclosures {
@@ -103,6 +105,7 @@ export function toUserPost(r: PostRow): UserPost {
     note: r.disclosure_note,
     labels: Array.isArray(r.labels) ? (r.labels.filter((l) => typeof l === "string") as string[]) : [],
     createdAt: r.created_at,
+    isShareable: r.is_shareable !== false,
   };
 }
 

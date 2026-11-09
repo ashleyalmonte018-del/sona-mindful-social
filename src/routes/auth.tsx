@@ -120,12 +120,12 @@ function AuthPage() {
                 {mode === "up" && (
                   <div className="space-y-1.5">
                     <Label htmlFor="name">What should we call you?</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" className="rounded-full" />
+                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} placeholder="" autoComplete="off" className="rounded-full" />
                   </div>
                 )}
                 <div className="space-y-1.5">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-full" />
+                  <Input id="email" type="email" required autoComplete={mode === "up" ? "off" : "email"} value={email} onChange={(e) => setEmail(e.target.value)} className="rounded-full" />
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="password">Password</Label>
@@ -134,6 +134,7 @@ function AuthPage() {
                     type="password"
                     required
                     minLength={6}
+                    autoComplete={mode === "up" ? "new-password" : "current-password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="rounded-full"
@@ -159,7 +160,7 @@ function AuthPage() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "in" ? "New here? " : "Already have an account? "}
-                <button className="text-foreground underline underline-offset-4" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+                <button className="text-foreground underline underline-offset-4" onClick={() => { setMode(mode === "in" ? "up" : "in"); setName(""); setEmail(""); setPassword(""); }}>
                   {mode === "in" ? "Create an account" : "Sign in"}
                 </button>
               </p>

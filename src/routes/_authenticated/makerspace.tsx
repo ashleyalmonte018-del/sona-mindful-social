@@ -30,6 +30,7 @@ import {
   type MediaType,
 } from "@/lib/sona/social";
 import { cn } from "@/lib/utils";
+import { CIRCLE_TIERS, type TierId } from "@/lib/sona/tiers";
 
 export const Route = createFileRoute("/_authenticated/makerspace")({
   head: () => ({
@@ -66,6 +67,7 @@ function MakerSpace() {
   const [busy, setBusy] = useState(false);
   const [tried, setTried] = useState(false);
   const [shareable, setShareable] = useState(true);
+  const [postTiers, setPostTiers] = useState<TierId[]>([]);
 
 
   useEffect(() => () => {
@@ -133,13 +135,20 @@ function MakerSpace() {
     try {
       if (type === "photo" && source) path = await uploadMedia("post-media", profile.id, await exportPhoto(source, edit), "jpg");
       if (type === "video" && video) path = await uploadMedia("post-media", profile.id, video.file, fileExt(video.file, "mp4"));
+      const postId = crypto.randomUUID();
+      const aud = postTiers.length ? "circle" : audience;
+      if (postTiers.length) {
+        const t = await supabase.from("post_tiers").insert(postTiers.map((tier) => ({ post_id: postId, owner_id: profile.id, tier })));
+        if (t.error) throw t.error;
+      }
       const { error } = await supabase.from("user_posts").insert({
+        id: postId,
         user_id: profile.id,
         body: body.trim(),
         media_type: type,
         image_path: path,
-        audience,
-        category: audience === "circle" ? "friends" : "inspiration",
+        audience: aud,
+        category: aud === "circle" ? "friends" : "inspiration",
         disclosures: { edited: !!disclosures.edited, filter: !!disclosures.filter, paid: !!disclosures.paid },
         disclosure_note: note.trim() || null,
         labels,
@@ -265,10 +274,24 @@ function MakerSpace() {
               <span className="text-sm">
                 Let others share this post
                 <span className="block text-xs text-muted-foreground">
-                  When sharing arrives, people will be able to pass this post along.
+                  People who can see it can send it in-app. Public posts from public accounts also get a copy link.
                 </span>
               </span>
             </label>
+            <div className="mt-4">
+              <p className="text-sm">Only these circle tiers <span className="text-muted-foreground">(optional)</span></p>
+              <p className="text-xs text-muted-foreground">Pick tiers and only circle members you've put in them will see it.</p>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {CIRCLE_TIERS.map((t) => {
+                  const on = postTiers.includes(t.id);
+                  return (
+                    <button key={t.id} type="button" aria-pressed={on} onClick={() => setPostTiers((xs) => (on ? xs.filter((x) => x !== t.id) : [...xs, t.id]))} className={cn("rounded-full border px-3 py-1 text-xs", on ? "border-ink bg-ink text-ink-foreground" : "border-border bg-background")}>
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </section>
 
           <section className="rounded-[1.75rem] border border-border bg-card p-5 shadow-soft">

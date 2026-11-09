@@ -65,6 +65,47 @@ export type Database = {
         }
         Relationships: []
       }
+      game_results: {
+        Row: {
+          created_at: string
+          game: string
+          id: string
+          loser_id: string | null
+          match_id: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id: string
+          player_b_id: string
+          winner_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          id?: string
+          loser_id?: string | null
+          match_id?: string | null
+          player_a_id?: string
+          player_b_id?: string
+          winner_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_results_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -95,6 +136,65 @@ export type Database = {
         }
         Relationships: []
       }
+      match_hidden_picks: {
+        Row: {
+          match_id: string
+          pick: string
+          player_id: string
+        }
+        Insert: {
+          match_id: string
+          pick: string
+          player_id: string
+        }
+        Update: {
+          match_id?: string
+          pick?: string
+          player_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "match_hidden_picks_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      match_sessions: {
+        Row: {
+          created_at: string
+          game: string
+          guest_id: string | null
+          host_id: string
+          id: string
+          state: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          game: string
+          guest_id?: string | null
+          host_id: string
+          id?: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          game?: string
+          guest_id?: string | null
+          host_id?: string
+          id?: string
+          state?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mood_checkins: {
         Row: {
           created_at: string
@@ -119,6 +219,110 @@ export type Database = {
           note?: string | null
           source?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          body: string
+          created_at: string
+          id: string
+          kind: string
+          match_id: string | null
+          post_id: string | null
+          read_at: string | null
+          recipient_id: string
+          title: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body: string
+          created_at?: string
+          id?: string
+          kind: string
+          match_id?: string | null
+          post_id?: string | null
+          read_at?: string | null
+          recipient_id: string
+          title: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string
+          created_at?: string
+          id?: string
+          kind?: string
+          match_id?: string | null
+          post_id?: string | null
+          read_at?: string | null
+          recipient_id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "match_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_shares: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          recipient_id: string | null
+          shared_by: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          recipient_id?: string | null
+          shared_by: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          recipient_id?: string | null
+          shared_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_shares_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "user_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_shares_shared_by_fkey"
+            columns: ["shared_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_tiers: {
+        Row: {
+          owner_id: string
+          post_id: string
+          tier: string
+        }
+        Insert: {
+          owner_id: string
+          post_id: string
+          tier: string
+        }
+        Update: {
+          owner_id?: string
+          post_id?: string
+          tier?: string
         }
         Relationships: []
       }
@@ -266,6 +470,10 @@ export type Database = {
     }
     Functions: {
       are_friends: { Args: { _a: string; _b: string }; Returns: boolean }
+      can_see_post: {
+        Args: { _post: string; _viewer: string }
+        Returns: boolean
+      }
       can_view_gallery: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -286,11 +494,34 @@ export type Database = {
           song: string
         }[]
       }
+      create_match: { Args: { _game: string; _guest: string }; Returns: string }
+      decline_match: { Args: { _match: string }; Returns: undefined }
+      followers_list: {
+        Args: { _owner: string }
+        Returns: {
+          avatar_path: string
+          display_name: string
+          handle: string
+          id: string
+        }[]
+      }
       is_approved_follower: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
       }
       is_public_profile: { Args: { _uid: string }; Returns: boolean }
+      join_match: { Args: { _match: string }; Returns: undefined }
+      match_move: { Args: { _match: string; _move: string }; Returns: Json }
+      notify_match: {
+        Args: {
+          _body: string
+          _kind: string
+          _match: string
+          _title: string
+          _to: string
+        }
+        Returns: undefined
+      }
       people_cards: {
         Args: { _ids: string[] }
         Returns: {
@@ -300,6 +531,10 @@ export type Database = {
           handle: string
           id: string
         }[]
+      }
+      post_tier_ok: {
+        Args: { _owner: string; _post: string; _viewer: string }
+        Returns: boolean
       }
       profile_card: { Args: { _id: string }; Returns: Json }
       public_feed_posts: {
@@ -326,6 +561,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      public_post_link: { Args: { _post: string }; Returns: boolean }
       reaches_public_feed: {
         Args: { _owner: string; _viewer: string }
         Returns: boolean
@@ -340,16 +576,41 @@ export type Database = {
           is_public: boolean
         }[]
       }
-      followers_list: {
-  Args: { _owner: string }
-  Returns: {
-    id: string
-    display_name: string
-    handle: string
-    avatar_path: string | null
-  }[]
-}
-
+      send_game_invite_notification: {
+        Args: { _match_id: string }
+        Returns: boolean
+      }
+      share_post: { Args: { _post: string }; Returns: string }
+      share_post_to: {
+        Args: { _post: string; _recipient: string }
+        Returns: boolean
+      }
+      shared_feed_posts: {
+        Args: { _limit?: number }
+        Returns: {
+          audience: string
+          body: string
+          category: string
+          created_at: string
+          disclosure_note: string | null
+          disclosures: Json
+          id: string
+          image_path: string | null
+          is_shareable: boolean
+          labels: Json
+          media_type: string
+          topics: string[]
+          user_id: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "user_posts"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      shared_post_card: { Args: { _post: string }; Returns: Json }
+      ttt_winner: { Args: { b: Json }; Returns: string }
     }
     Enums: {
       [_ in never]: never
@@ -357,7 +618,6 @@ export type Database = {
     CompositeTypes: {
       [_ in never]: never
     }
-
   }
 }
 

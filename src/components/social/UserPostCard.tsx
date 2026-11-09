@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle, BadgeInfo, Eye, Globe, Trash2, Users } from "lucide-react";
+import { AlertTriangle, BadgeInfo, Eye, Globe, Share2, Trash2, Users } from "lucide-react";
+import { ShareDialog } from "@/components/social/ShareDialog";
 import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -45,8 +46,10 @@ export function UserPostCard({
   author: PersonCard | undefined;
   labelStyle: LabelStyle;
   isMine?: boolean | undefined;
+  myId?: string | undefined;
 }) {
   const [why, setWhy] = useState(false);
+  const [share, setShare] = useState(false);
   const loud = labelStyle === "loud" && post.labels.length > 0;
   const [revealed, setRevealed] = useState(!loud);
   const del = useDeletePost();
@@ -126,7 +129,13 @@ export function UserPostCard({
         <Button size="sm" variant="ghost" className="ml-auto text-muted-foreground" onClick={() => setWhy(true)}>
           See why
         </Button>
+        {post.isShareable && (
+          <Button size="sm" variant="ghost" className="text-muted-foreground" onClick={() => setShare(true)}>
+            <Share2 /> Share
+          </Button>
+        )}
       </footer>
+      {share && <ShareDialog post={post} open={share} onOpenChange={setShare} />}
       <SeeWhyDialog post={post} author={name} labelStyle={labelStyle} open={why} onOpenChange={setWhy} />
     </article>
   );
