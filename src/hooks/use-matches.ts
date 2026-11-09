@@ -44,16 +44,22 @@ const toMatch = (r: Row): Match => ({
   hostId: r.host_id,
   guestId: r.guest_id ?? "",
   status: (["waiting", "active", "done", "cancelled"].includes(r.status) ? r.status : "waiting") as MatchStatus,
-  state: r.state as TttState | RpsState,
+  state: (r.state ?? {}) as TttState | RpsState,
   updatedAt: r.updated_at,
 });
+
 
 /** Whose move is it? Pure so it can be tested. */
 export function isMyTurn(m: Match, me: string): boolean {
   if (m.status !== "waiting" && m.status !== "active") return false;
-  if (m.game === "ttt") return (m.state as TttState).turn === me;
-  return !(m.state as RpsState).picked.includes(me);
+  if (!m.state) return false;
+  if (m.game === "ttt") {
+    return (m.state as Partial<TttState>)?.turn === me;
+  }
+  const picked = (m.state as Partial<RpsState>)?.picked;
+  return Array.isArray(picked) ? !picked.includes(me) : false;
 }
+
 
 export function useMatch(id: string | null) {
   const qc = useQueryClient();
