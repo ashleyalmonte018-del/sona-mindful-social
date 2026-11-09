@@ -14,12 +14,15 @@ import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
+import { LiveMatch } from "@/components/zone/LiveGames";
+import { isMyTurn, useMatchActions, useMyMatches, type LiveGame } from "@/hooks/use-matches";
 import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
 import { CIRCLE_TIERS, filterByTier, tierCounts, tierLabel, type TierId } from "@/lib/sona/tiers";
 import { moodColor, moodLabel, type MoodId, type SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/circle")({
+  validateSearch: (s: Record<string, unknown>): { match?: string } => (typeof s.match === "string" ? { match: s.match } : {}),
   head: () => ({
     meta: [
       { title: "Circle — Sona" },
@@ -87,6 +90,11 @@ function CirclePage() {
   const [selected, setSelected] = useState<string>("me");
   const [game, setGame] = useState<(typeof GAMES)[number] | null>(null);
   const [opponent, setOpponent] = useState<string>("practice");
+  const search = Route.useSearch();
+  const [liveId, setLiveId] = useState<string | null>(search.match ?? null);
+  useEffect(() => {
+    if (search.match) setLiveId(search.match);
+  }, [search.match]);
 
   useEffect(() => {
     const n = visitors.length + 1;
@@ -260,6 +268,8 @@ function CirclePage() {
               ))}
             </div>
           </section>
+
+          <LiveGamesSection members={real} myId={profile.id} onOpen={setLiveId} />
         </div>
 
         <CircleSidePanel members={real} usingSamples={usingSamples} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
@@ -280,7 +290,100 @@ function CirclePage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <Dialog open={!!liveId} onOpenChange={(o) => !o && setLiveId(null)}>
+        <DialogContent className="rounded-[2rem] sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              <DoodleTitle text="Live match" className="text-3xl" />
+            </DialogTitle>
+            <DialogDescription>Moves sync to both phones as you play.</DialogDescription>
+          </DialogHeader>
+          {liveId && <LiveMatchWithPeople matchId={liveId} myId={profile.id} members={real} myLook={profile.look} />}
+        </DialogContent>
+      </Dialog>
     </>
+  );
+}
+
+function LiveMatchWithPeople({ matchId, myId, members, myLook }: { matchId: string; myId: string; members: CircleMember[]; myLook: SonaLook }) {
+  const matches = useMyMatches(myId);
+  const m = matches.data?.find((x) => x.id === matchId);
+  const otherId = m ? (m.hostId === myId ? m.guestId : m.hostId) : null;
+  const other = members.find((x) => x.id === otherId);
+  return <LiveMatch matchId={matchId} myId={myId} players={{ me: { name: "You", look: myLook }, them: { name: other?.name ?? "Your friend", look: other?.look ?? {} } }} />;
+}
+
+const LIVE_GAMES: { id: LiveGame; title: string }[] = [
+  { id: "ttt", title: "Tic Tac Toe" },
+  { id: "rps", title: "Rock Paper Scissors" },
+];
+
+/** Real two-player games with circle members, each on their own device. */
+function LiveGamesSection({ members, myId, onOpen }: { members: CircleMember[]; myId: string; onOpen: (id: string) => void }) {
+  const matches = useMyMatches(myId);
+  const { create } = useMatchActions();
+  const [game, setGame] = useState<LiveGame>("ttt");
+  const [friend, setFriend] = useState<string>("");
+  const playable = members.filter((m) => m.allowsPlay);
+  const nameOf = (id: string) => members.find((m) => m.id === id)?.name ?? "A friend";
+  const list = matches.data ?? [];
+
+  return (
+    <section className="mt-10 rounded-[2rem] border border-border bg-card p-6 shadow-soft">
+      <h2 className="heading-calm text-3xl">Play a friend live</h2>
+      <p className="subline text-sm">Take turns from your own phones. They get a ping when it's their move.</p>
+
+      {playable.length === 0 ? (
+        <p className="mt-4 text-sm text-muted-foreground">
+          Once someone in your circle (you follow each other) allows play, you can invite them here.{" "}
+          <Link to="/people" className="underline underline-offset-4">Find people</Link>
+        </p>
+      ) : (
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          {LIVE_GAMES.map((g) => (
+            <button key={g.id} onClick={() => setGame(g.id)} aria-pressed={game === g.id} className={cn("rounded-full border px-3 py-1 text-sm", game === g.id ? "border-ink bg-ink text-ink-foreground" : "border-border bg-background")}>
+              {g.title}
+            </button>
+          ))}
+          <select aria-label="Friend to invite" value={friend} onChange={(e) => setFriend(e.target.value)} className="rounded-full border border-border bg-background px-3 py-1.5 text-sm">
+            <option value="">Pick a friend…</option>
+            {playable.map((m) => (
+              <option key={m.id} value={m.id}>{m.name}</option>
+            ))}
+          </select>
+          <Button
+            size="sm"
+            variant="ink"
+            disabled={!friend || create.isPending}
+            onClick={() => create.mutate({ game, guest: friend }, { onSuccess: (id) => onOpen(id) })}
+          >
+            Send invite
+          </Button>
+        </div>
+      )}
+
+      {list.length > 0 && (
+        <ul className="mt-5 space-y-2">
+          {list.map((m) => {
+            const other = m.hostId === myId ? m.guestId : m.hostId;
+            const invitedMe = m.status === "waiting" && m.guestId === myId;
+            const turn = isMyTurn(m, myId);
+            return (
+              <li key={m.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border p-3">
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium">{m.game === "ttt" ? "Tic Tac Toe" : "Rock Paper Scissors"} with {nameOf(other)}</p>
+                  <p className="text-xs text-muted-foreground">{invitedMe ? "Invited you" : m.status === "waiting" ? "Waiting for them to join" : turn ? "Your move" : "Their move"}</p>
+                </div>
+                <Button size="sm" variant={invitedMe || turn ? "ink" : "soft"} onClick={() => onOpen(m.id)}>
+                  {invitedMe ? "Open invite" : "Open"}
+                </Button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
   );
 }
 
