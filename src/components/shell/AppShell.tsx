@@ -1,5 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
-import { LogOut } from "lucide-react";
+import { Bell, LogOut } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { markNotificationsRead, useNotifications, type AppNotification } from "@/hooks/use-matches";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
@@ -49,6 +51,19 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
     }
     lastCount.current = pendingCount;
   }, [pendingCount, requests.isSuccess, requests.data, navigate]);
+
+  // Game invites, your-turn pings and shared posts arrive live.
+  const notes = useNotifications(profile?.id, (n) => {
+    const open = () => openNote(n);
+    toast(n.title, { description: n.body, action: { label: "Open", onClick: open } });
+  });
+  const unread = (notes.data ?? []).filter((n) => !n.readAt);
+  const unreadGames = unread.filter((n) => n.matchId).length;
+  function openNote(n: AppNotification) {
+    void markNotificationsRead([n.id]).then(() => notes.refetch());
+    if (n.matchId) navigate({ to: "/circle", search: { match: n.matchId } });
+    else if (n.postId) navigate({ to: "/p/$postId", params: { postId: n.postId } });
+  }
     const [snoozed, setSnoozed] = useState(false);
   const timeLimit = profile?.settings.timeLimit ?? 45;
   const isLimitReached = Boolean(
@@ -93,6 +108,11 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
                         {pendingCount}
                       </span>
                     )}
+                    {n.to === "/circle" && unreadGames > 0 && (
+                      <span className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-lime px-1.5 text-[0.65rem] font-medium text-lime-foreground" aria-label={`${unreadGames} game pings`}>
+                        {unreadGames}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}
@@ -104,6 +124,30 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
                 <SonaFigure look={profile.look} pose="stand" noShadow className="h-9 w-7" />
               </Link>
             )}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label={unread.length ? `${unread.length} new notifications` : "Notifications"} className="relative">
+                  <Bell />
+                  {unread.length > 0 && <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-care" />}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="end" className="w-80 rounded-[1.25rem] p-2">
+                {(notes.data ?? []).length === 0 ? (
+                  <p className="p-3 text-sm text-muted-foreground">Nothing new. Game invites and shared posts show up here.</p>
+                ) : (
+                  <ul className="max-h-96 overflow-y-auto">
+                    {(notes.data ?? []).map((n) => (
+                      <li key={n.id}>
+                        <button onClick={() => openNote(n)} className={cn("w-full rounded-xl p-3 text-left transition hover:bg-secondary", !n.readAt && "bg-lime-soft")}>
+                          <p className="text-sm font-medium">{n.title}</p>
+                          <p className="line-clamp-2 text-xs text-muted-foreground">{n.body}</p>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </PopoverContent>
+            </Popover>
             <Button variant="ghost" size="icon" onClick={signOut} aria-label="Sign out">
               <LogOut />
             </Button>
