@@ -70,10 +70,6 @@ function createSupabaseClient() {
       storage: brokeredPreviewStorage(),
       persistSession: true,
       autoRefreshToken: true,
-      // Password-reset emails return here with a temporary recovery session
-      // in the URL. Explicitly keep URL-session detection enabled so the
-      // reset form can safely call updateUser after the inbox link is opened.
-      detectSessionInUrl: true,
     },
   });
 }

@@ -21,11 +21,9 @@ import { Route as AuthenticatedMakerspaceRouteImport } from './routes/_authentic
 import { Route as AuthenticatedParentRouteImport } from './routes/_authenticated/parent'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
-import { Route as AuthenticatedSetupRouteImport } from './routes/_authenticated/setup'
 import { Route as AuthenticatedStudioRouteImport } from './routes/_authenticated/studio'
 import { Route as AuthenticatedVibeRouteImport } from './routes/_authenticated/vibe'
 import { Route as AuthenticatedZoneRouteImport } from './routes/_authenticated/zone'
-import { Route as AuthenticatedChatIdRouteImport } from './routes/_authenticated/chat.$id'
 import { Route as AuthenticatedPeopleIndexRouteImport } from './routes/_authenticated/people.index'
 import { Route as AuthenticatedPeopleIdRouteImport } from './routes/_authenticated/people.$id'
 
@@ -89,11 +87,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedSetupRoute = AuthenticatedSetupRouteImport.update({
-  id: '/setup',
-  path: '/setup',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
 const AuthenticatedStudioRoute = AuthenticatedStudioRouteImport.update({
   id: '/studio',
   path: '/studio',
@@ -107,11 +100,6 @@ const AuthenticatedVibeRoute = AuthenticatedVibeRouteImport.update({
 const AuthenticatedZoneRoute = AuthenticatedZoneRouteImport.update({
   id: '/zone',
   path: '/zone',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
-const AuthenticatedChatIdRoute = AuthenticatedChatIdRouteImport.update({
-  id: '/chat/$id',
-  path: '/chat/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPeopleIndexRoute =
@@ -138,11 +126,9 @@ export interface FileRoutesByFullPath {
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/setup': typeof AuthenticatedSetupRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
-  '/chat/$id': typeof AuthenticatedChatIdRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -158,11 +144,9 @@ export interface FileRoutesByTo {
   '/parent': typeof AuthenticatedParentRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/settings': typeof AuthenticatedSettingsRoute
-  '/setup': typeof AuthenticatedSetupRoute
   '/studio': typeof AuthenticatedStudioRoute
   '/vibe': typeof AuthenticatedVibeRoute
   '/zone': typeof AuthenticatedZoneRoute
-  '/chat/$id': typeof AuthenticatedChatIdRoute
   '/people/$id': typeof AuthenticatedPeopleIdRoute
   '/people': typeof AuthenticatedPeopleIndexRoute
 }
@@ -180,11 +164,9 @@ export interface FileRoutesById {
   '/_authenticated/parent': typeof AuthenticatedParentRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
-  '/_authenticated/setup': typeof AuthenticatedSetupRoute
   '/_authenticated/studio': typeof AuthenticatedStudioRoute
   '/_authenticated/vibe': typeof AuthenticatedVibeRoute
   '/_authenticated/zone': typeof AuthenticatedZoneRoute
-  '/_authenticated/chat/$id': typeof AuthenticatedChatIdRoute
   '/_authenticated/people/$id': typeof AuthenticatedPeopleIdRoute
   '/_authenticated/people/': typeof AuthenticatedPeopleIndexRoute
 }
@@ -202,11 +184,9 @@ export interface FileRouteTypes {
     | '/parent'
     | '/profile'
     | '/settings'
-    | '/setup'
     | '/studio'
     | '/vibe'
     | '/zone'
-    | '/chat/$id'
     | '/people/$id'
     | '/people/'
   fileRoutesByTo: FileRoutesByTo
@@ -222,11 +202,9 @@ export interface FileRouteTypes {
     | '/parent'
     | '/profile'
     | '/settings'
-    | '/setup'
     | '/studio'
     | '/vibe'
     | '/zone'
-    | '/chat/$id'
     | '/people/$id'
     | '/people'
   id:
@@ -243,11 +221,9 @@ export interface FileRouteTypes {
     | '/_authenticated/parent'
     | '/_authenticated/profile'
     | '/_authenticated/settings'
-    | '/_authenticated/setup'
     | '/_authenticated/studio'
     | '/_authenticated/vibe'
     | '/_authenticated/zone'
-    | '/_authenticated/chat/$id'
     | '/_authenticated/people/$id'
     | '/_authenticated/people/'
   fileRoutesById: FileRoutesById
@@ -344,13 +320,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/_authenticated/setup': {
-      id: '/_authenticated/setup'
-      path: '/setup'
-      fullPath: '/setup'
-      preLoaderRoute: typeof AuthenticatedSetupRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
     '/_authenticated/studio': {
       id: '/_authenticated/studio'
       path: '/studio'
@@ -370,13 +339,6 @@ declare module '@tanstack/react-router' {
       path: '/zone'
       fullPath: '/zone'
       preLoaderRoute: typeof AuthenticatedZoneRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/chat/$id': {
-      id: '/_authenticated/chat/$id'
-      path: '/chat/$id'
-      fullPath: '/chat/$id'
-      preLoaderRoute: typeof AuthenticatedChatIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/people/': {
@@ -406,11 +368,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedParentRoute: typeof AuthenticatedParentRoute
   AuthenticatedProfileRoute: typeof AuthenticatedProfileRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
-  AuthenticatedSetupRoute: typeof AuthenticatedSetupRoute
   AuthenticatedStudioRoute: typeof AuthenticatedStudioRoute
   AuthenticatedVibeRoute: typeof AuthenticatedVibeRoute
   AuthenticatedZoneRoute: typeof AuthenticatedZoneRoute
-  AuthenticatedChatIdRoute: typeof AuthenticatedChatIdRoute
   AuthenticatedPeopleIdRoute: typeof AuthenticatedPeopleIdRoute
   AuthenticatedPeopleIndexRoute: typeof AuthenticatedPeopleIndexRoute
 }
@@ -425,11 +385,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedParentRoute: AuthenticatedParentRoute,
   AuthenticatedProfileRoute: AuthenticatedProfileRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
-  AuthenticatedSetupRoute: AuthenticatedSetupRoute,
   AuthenticatedStudioRoute: AuthenticatedStudioRoute,
   AuthenticatedVibeRoute: AuthenticatedVibeRoute,
   AuthenticatedZoneRoute: AuthenticatedZoneRoute,
-  AuthenticatedChatIdRoute: AuthenticatedChatIdRoute,
   AuthenticatedPeopleIdRoute: AuthenticatedPeopleIdRoute,
   AuthenticatedPeopleIndexRoute: AuthenticatedPeopleIndexRoute,
 }

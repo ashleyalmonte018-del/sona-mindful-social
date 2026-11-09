@@ -135,7 +135,6 @@ export function useSonaProfile() {
     if (error) {
       toast.error("Couldn't save that change", { description: error.message });
       qc.invalidateQueries({ queryKey: PROFILE_KEY });
-      throw error;
     }
   }, [qc]);
 
@@ -150,7 +149,7 @@ export function useSonaProfile() {
       pending.current = merged;
       if (timer.current) clearTimeout(timer.current);
       if (opts?.immediate) return flush();
-      timer.current = setTimeout(() => { void flush().catch(() => undefined); }, 450);
+      timer.current = setTimeout(flush, 450);
       return Promise.resolve();
     },
     [qc, flush],

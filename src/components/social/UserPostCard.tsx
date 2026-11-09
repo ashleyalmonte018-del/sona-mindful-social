@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { PersonAvatar } from "@/components/social/Avatar";
 import { SeeWhyDialog } from "@/components/social/SeeWhyDialog";
-import { useDeletePost, useSharePost, useSignedUrl, type PersonCard } from "@/hooks/use-social";
+import { useDeletePost, useSignedUrl, type PersonCard } from "@/hooks/use-social";
 import { disclosureChips, triggerLabel, type LabelStyle, type UserPost } from "@/lib/sona/social";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +50,6 @@ export function UserPostCard({
   const loud = labelStyle === "loud" && post.labels.length > 0;
   const [revealed, setRevealed] = useState(!loud);
   const del = useDeletePost();
-  const share = useSharePost();
   const chips = disclosureChips(post.disclosures);
   const name = author?.display_name ?? "Someone";
 
@@ -72,9 +71,6 @@ export function UserPostCard({
           <Button size="icon" variant="ghost" aria-label="Delete post" onClick={() => confirm("Delete this post?") && del.mutate(post)}>
             <Trash2 />
           </Button>
-        )}
-        {post.isShareable && !isMine && (
-          <Button size="sm" variant="soft" onClick={() => share.mutate(post.id)} disabled={share.isPending}>Share</Button>
         )}
       </header>
 

@@ -214,7 +214,6 @@ export const DEFAULT_LOOK: SonaLook = {
 // ---------- User settings ----------
 
 export interface SonaSettings {
-  setupCompleted?: boolean;
   curate: Record<TopicId, Filter>;
   guard: GuardLevel;
   vibe: Dials;
@@ -233,8 +232,6 @@ export interface SonaSettings {
   labelStyle: "loud" | "quiet";
   /** Site colours: a gradient preset or custom colour, plus light/dark mode. */
   theme: ThemeChoice;
-  /** Private chat wallpaper uploaded by the signed-in user. */
-  chatBackgroundPath: string | null;
   zone: string[];
 }
 
@@ -263,7 +260,6 @@ export const DEFAULT_SETTINGS: SonaSettings = {
   timeLimit: 45,
   labelStyle: "loud",
   theme: DEFAULT_THEME,
-  chatBackgroundPath: null,
   zone: [],
 };
 

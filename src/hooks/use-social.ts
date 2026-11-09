@@ -154,8 +154,6 @@ export function useFollowRequests(myId: string | undefined, opts?: { poll?: bool
 export function useFollowActions(myId: string) {
   const qc = useQueryClient();
   const refresh = () => {
-    qc.invalidateQueries({ queryKey: ['circle-members'] });
-    qc.invalidateQueries({ queryKey: ['circle-tiers'] });
     qc.invalidateQueries({ queryKey: ["profile-card"] });
     qc.invalidateQueries({ queryKey: ["follow-requests"] });
     qc.invalidateQueries({ queryKey: ["posts-by"] });
@@ -224,41 +222,8 @@ export function useDeletePost() {
   });
 }
 
-export function useSharePost() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async (postId: string) => {
-      const { error } = await supabase.rpc("share_post", { _post: postId });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      toast.success("Shared with your Circle — the original audience still applies");
-      qc.invalidateQueries({ queryKey: ['feed-shared'] });
-      qc.invalidateQueries({ queryKey: ["feed-public"] });
-      qc.invalidateQueries({ queryKey: ["feed-circle"] });
-      qc.invalidateQueries({ queryKey: ["posts-by"] });
-    },
-    onError: (e: Error) => toast.error("Couldn't share that", { description: e.message }),
-  });
-}
-
-export function useSharedFeed() {
-  return useQuery({ queryKey: ['feed-shared'], queryFn: async () => {
-    const { data, error } = await supabase.rpc('shared_feed_posts', { _limit: 15 });
-    if (error) throw error;
-    return (data ?? []).map(toUserPost);
-  } });
-}
-
-export async function copyPostLink(postId: string) {
-  const { data, error } = await supabase.rpc('public_post_link', { _post: postId });
-  if (error) throw error;
-  if (!data) throw new Error('Only shareable Public Feed posts from public accounts have a public link.');
-  await navigator.clipboard.writeText(`${window.location.origin}/post/${postId}`);
-}
-
 /** Private buckets: everything is served through short-lived signed links. */
-export function useSignedUrl(bucket: "post-media" | "profile-media" | "chat-backgrounds", path: string | null | undefined) {
+export function useSignedUrl(bucket: "post-media" | "profile-media", path: string | null | undefined) {
   return useQuery({
     queryKey: ["signed", bucket, path],
     enabled: Boolean(path),
@@ -271,7 +236,7 @@ export function useSignedUrl(bucket: "post-media" | "profile-media" | "chat-back
   });
 }
 
-export async function uploadMedia(bucket: "post-media" | "profile-media" | "chat-backgrounds", userId: string, body: Blob, ext: string) {
+export async function uploadMedia(bucket: "post-media" | "profile-media", userId: string, body: Blob, ext: string) {
   const path = `${userId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage.from(bucket).upload(path, body, { upsert: false, ...(body.type ? { contentType: body.type } : {}) });
   if (error) throw error;

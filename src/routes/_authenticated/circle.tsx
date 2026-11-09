@@ -1,6 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
-import { Layers, Music2, Tag } from "lucide-react";
+import { Layers, Music2, Search, Tag } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -14,11 +13,8 @@ import { AppShell, PageHeader } from "@/components/shell/AppShell";
 import { MoodDot, MoodPicker } from "@/components/shell/MoodPicker";
 import { useSona } from "@/components/shell/SonaContext";
 import { SonaFigure } from "@/components/sona/SonaFigure";
-import { OnlineMatch } from "@/components/zone/OnlineMatch";
 import { DoodleTitle, GAMES, type Players } from "@/components/zone/Games";
 import { useCircleMembers, useCircleTiers, type CircleMember } from "@/hooks/use-circle";
-import { usePeopleCards } from "@/hooks/use-social";
-import { supabase } from "@/integrations/supabase/client";
 import { CIRCLE_TIERS, filterByTier, tierCounts, tierLabel, type TierId } from "@/lib/sona/tiers";
 import { moodColor, moodLabel, type MoodId, type SonaLook } from "@/lib/sona/types";
 import { cn } from "@/lib/utils";
@@ -73,7 +69,7 @@ function CirclePage() {
 
   const membersQ = useCircleMembers();
   const real = membersQ.data ?? [];
-  const emptyCircle = membersQ.isSuccess && real.length === 0;
+  const usingSamples = membersQ.isSuccess && real.length === 0;
   const members = real;
   const tiers = useCircleTiers(profile.id);
   const [tierFilter, setTierFilter] = useState<TierId | "all">("all");
@@ -91,7 +87,6 @@ function CirclePage() {
   const [selected, setSelected] = useState<string>("me");
   const [game, setGame] = useState<(typeof GAMES)[number] | null>(null);
   const [opponent, setOpponent] = useState<string>("practice");
-  const [matchRound, setMatchRound] = useState(0);
 
   useEffect(() => {
     const n = visitors.length + 1;
@@ -117,9 +112,9 @@ function CirclePage() {
       mood: quiet || m.quiet ? null : m.mood,
     }));
     setBuddies([me, ...others]);
-    if (!members.some((v) => v.id === opponent && v.allowsPlay)) setOpponent("practice");
+    if (!visitors.some((v) => v.id === opponent)) setOpponent("practice");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile.look, visitors, members, quiet, s.share.song, s.share.mood]);
+  }, [profile.look, visitors, quiet, s.share.song, s.share.mood]);
 
   // Idle wandering for visitors
   useEffect(() => {
@@ -135,7 +130,7 @@ function CirclePage() {
   }
 
   const sel = buddies.find((b) => b.id === selected);
-  const opp = members.find((f) => f.id === opponent);
+  const opp = visitors.find((f) => f.id === opponent);
   const players: Players = {
     me: { name: "You", look: profile.look },
     them: opp ? { name: opp.name, look: opp.look } : { name: profile.look.name || "Sona", look: { ...profile.look, skin: "#f3f4f1" } },
@@ -226,14 +221,11 @@ function CirclePage() {
                 </div>
               )}
               {!allow && <p className="subline mt-3 text-sm">Visits are off — it's just you and your Sona. Turn visits on in the side panel to play with your circle.</p>}
-              {membersQ.isError && <div className="mt-3 text-sm text-destructive">Couldn't load your Circle. <Button variant="ghost" size="sm" onClick={() => void membersQ.refetch()}>Try again</Button></div>}
-              {allow && emptyCircle && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, then choose their Sona in the side panel.</p>}
-              {allow && membersQ.isSuccess && !emptyCircle && visitors.length === 0 && (
+              {allow && usingSamples && <p className="mt-3 text-xs text-muted-foreground">Your circle is empty for now. Follow someone and have them follow you back, and their Sona will appear here.</p>}
+              {allow && !usingSamples && visitors.length === 0 && (
                 <p className="mt-3 text-xs text-muted-foreground">Your Zone is empty — pick who visits from the side panel.</p>)}
             </>
           )}
-
-          <GameHistory myId={profile.id} />
 
           {/* Minigames */}
           <section className="mt-12">
@@ -247,7 +239,7 @@ function CirclePage() {
                 <button onClick={() => setOpponent("practice")} className={cn("rounded-full border px-3 py-1", opponent === "practice" ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card")}>
                   My Sona
                 </button>
-                {members.filter((f) => f.allowsPlay).map((f) => (
+                {visitors.map((f) => (
                   <button key={f.id} onClick={() => setOpponent(f.id)} className={cn("rounded-full border px-3 py-1", opponent === f.id ? "border-ink bg-ink text-ink-foreground" : "border-border bg-card")}>
                     {f.name}
                   </button>
@@ -268,10 +260,9 @@ function CirclePage() {
               ))}
             </div>
           </section>
-          <OnlineMatch myId={profile.id} />
         </div>
 
-        <CircleSidePanel members={real} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
+        <CircleSidePanel members={real} usingSamples={usingSamples} loading={membersQ.isLoading} tierFilter={tierFilter} onTierFilter={setTierFilter} tiers={tiers} />
       </div>
 
       <Dialog open={!!game} onOpenChange={(o) => !o && setGame(null)}>
@@ -284,79 +275,12 @@ function CirclePage() {
                 </DialogTitle>
                 <DialogDescription>Playing with {players.them.name}</DialogDescription>
               </DialogHeader>
-              {opponent === "practice" ? <game.C players={players} /> : <OnlineMatch key={`${game.id}:${opponent}:${matchRound}`} myId={profile.id} opponentId={opponent} game={game.id} players={players} fallback={<game.C players={players} />} showInvites={false} onCancelled={() => setMatchRound((round) => round + 1)} />}
+              <game.C players={players} />
             </>
           )}
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-const GAME_LABELS: Record<string, string> = {
-  ttt: "Tic-Tac-Toe",
-  rps: "Rock, Paper, Scissors",
-  oe: "Odds or Evens",
-  dots: "Dots and Boxes",
-};
-
-function formatGameTimestamp(value: string) {
-  const date = new Date(value);
-  return `${date.toISOString().slice(0, 16).replace("T", " ")} UTC`;
-}
-
-function GameHistory({ myId }: { myId: string }) {
-  const resultsQ = useQuery({
-    queryKey: ["game-history", myId],
-    refetchInterval: 30_000,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("game_results")
-        .select("id,game,winner_id,loser_id,player_a_id,player_b_id,created_at")
-        .or(`player_a_id.eq.${myId},player_b_id.eq.${myId}`)
-        .order("created_at", { ascending: false })
-        .limit(20);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-  const opponentIds = (resultsQ.data ?? []).map((result) => result.player_a_id === myId ? result.player_b_id : result.player_a_id);
-  const peopleQ = usePeopleCards(opponentIds);
-
-  return (
-    <section aria-label="Game record" className="mt-12 rounded-[2rem] border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-end justify-between gap-3">
-        <div>
-          <p className="eyebrow text-muted-foreground">Circle record</p>
-          <h2 className="heading-calm text-3xl">Wins & losses</h2>
-        </div>
-        <span className="text-xs text-muted-foreground">Your last 20 rounds</span>
-      </div>
-      {resultsQ.error ? (
-        <p className="mt-4 text-sm text-muted-foreground">Game records will appear after the latest database migration.</p>
-      ) : resultsQ.isLoading ? (
-        <p className="mt-4 text-sm text-muted-foreground">Loading your record…</p>
-      ) : (resultsQ.data ?? []).length === 0 ? (
-        <p className="mt-4 text-sm text-muted-foreground">Finish a round with a Circle member and your record will appear here.</p>
-      ) : (
-        <div className="mt-4 grid gap-2">
-          {(resultsQ.data ?? []).map((result) => {
-            const opponentId = result.player_a_id === myId ? result.player_b_id : result.player_a_id;
-            const opponent = peopleQ.data?.[opponentId];
-            const outcome = result.winner_id === null ? "Draw" : result.winner_id === myId ? "Win" : "Loss";
-            return (
-              <div key={result.id} className="flex items-center justify-between gap-3 rounded-2xl border border-border/70 px-3 py-2 text-sm">
-                <div className="min-w-0">
-                  <p className="truncate">{GAME_LABELS[result.game] ?? result.game} · {opponent?.display_name ?? "Circle member"}</p>
-                  <p className="text-xs text-muted-foreground">{formatGameTimestamp(result.created_at)}</p>
-                </div>
-                <span className={cn("shrink-0 rounded-full px-2.5 py-1 text-xs", outcome === "Win" ? "bg-lime-soft text-foreground" : outcome === "Loss" ? "bg-orange-soft text-foreground" : "bg-muted text-muted-foreground")}>{outcome}</span>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </section>
   );
 }
 
@@ -379,7 +303,7 @@ function ShareBar() {
               <p className="subline text-sm">Nothing — quiet mode</p>
             ) : (
               <p className="flex items-center gap-1.5 text-sm">
-                <MoodDot color={moodColor(share.mood)} /> <span className="truncate">{[share.song, share.artist].filter(Boolean).join(' — ') || moodLabel(share.mood)}</span>
+                <MoodDot color={moodColor(share.mood)} /> <span className="truncate">{share.song} — {share.artist}</span>
               </p>
             )}
           </div>
@@ -414,12 +338,14 @@ function ShareBar() {
 
 function CircleSidePanel({
   members,
+  usingSamples,
   loading,
   tierFilter,
   onTierFilter,
   tiers,
 }: {
   members: CircleMember[];
+  usingSamples: boolean;
   loading: boolean;
   tierFilter: TierId | "all";
   onTierFilter: (t: TierId | "all") => void;
@@ -519,6 +445,15 @@ function CircleSidePanel({
           <p className="eyebrow text-muted-foreground">Members</p>
           {loading ? (
             <p className="mt-2 text-sm text-muted-foreground">Loading your circle…</p>
+          ) : usingSamples ? (
+            <div className="mt-2 rounded-2xl bg-secondary p-4 text-sm">
+              <p>Your circle is people who follow each other. Once someone's in, you can sort them into tiers here.</p>
+              <Button asChild variant="pill" size="sm" className="mt-3">
+                <Link to="/people">
+                  <Search /> Find people
+                </Link>
+              </Button>
+            </div>
           ) : listed.length === 0 ? (
             <p className="mt-2 text-sm text-muted-foreground">Nobody in {tierFilter === "all" ? "your circle" : tierLabel(tierFilter)} yet.</p>
           ) : (
@@ -550,11 +485,11 @@ function TierChip({ label, count, on, onClick }: { label: string; count: number;
 function MemberRow({ member, tiers, onToggle }: { member: CircleMember; tiers: TierId[]; onToggle: (t: TierId, on: boolean) => void }) {
   return (
     <li className="flex items-center gap-3 rounded-2xl p-2 hover:bg-secondary/60">
-      <Link to="/chat/$id" params={{ id: member.id }} className="flex size-10 shrink-0 items-end justify-center overflow-hidden rounded-full bg-secondary" aria-label={`Chat with ${member.name}`}>
+      <Link to="/people/$id" params={{ id: member.id }} className="flex size-10 shrink-0 items-end justify-center overflow-hidden rounded-full bg-secondary" aria-label={`${member.name}'s profile`}>
         <SonaFigure look={member.look} pose="stand" noShadow className="-mb-3 h-12" />
       </Link>
       <div className="min-w-0 flex-1">
-        <Link to="/chat/$id" params={{ id: member.id }} className="truncate text-sm font-medium hover:underline">{member.name}</Link>
+        <p className="truncate text-sm font-medium">{member.name}</p>
         <p className="truncate text-xs text-muted-foreground">{tiers.length ? tiers.map(tierLabel).join(" · ") : "Not sorted yet"}</p>
       </div>
       <Popover>

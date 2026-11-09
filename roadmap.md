@@ -1,10 +1,5 @@
 # Sona roadmap
 
-## Batch 3 and cleanup
-- [ ] New-user Set Up: age group, dials, filters/settings; optional Sona/profile personalization
-- [ ] Share eligible posts in-app and by link, preserving account privacy and shareable choice
-- [ ] Repair concrete loose ends and verify setup, sharing, and existing functions
-
 ## Done
 - [x] Landing, sign-in, app shell with black pill nav and floating Sona helper
 - [x] Feed: finite edition, buckets, held/softened posts, Why this?, breathing refresh, caught-up screen

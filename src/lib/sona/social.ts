@@ -71,10 +71,6 @@ export interface UserPost {
   note: string | null;
   labels: string[];
   createdAt: string;
-  isShareable: boolean;
-  circleTiers: string[];
-  resharedFrom: string | null;
-  sharedBy: string | null;
 }
 
 type PostRow = {
@@ -88,10 +84,6 @@ type PostRow = {
   disclosure_note: string | null;
   labels: unknown;
   created_at: string;
-  is_shareable?: boolean;
-  circle_tiers?: string[];
-  reshared_from?: string | null;
-  shared_by?: string | null;
 };
 
 export function parseDisclosures(raw: unknown): Disclosures {
@@ -111,10 +103,6 @@ export function toUserPost(r: PostRow): UserPost {
     note: r.disclosure_note,
     labels: Array.isArray(r.labels) ? (r.labels.filter((l) => typeof l === "string") as string[]) : [],
     createdAt: r.created_at,
-    isShareable: r.is_shareable !== false,
-    circleTiers: Array.isArray(r.circle_tiers) ? r.circle_tiers : [],
-    resharedFrom: r.reshared_from ?? null,
-    sharedBy: r.shared_by ?? null,
   };
 }
 

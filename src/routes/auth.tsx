@@ -11,7 +11,7 @@ import { SonaFigure } from "@/components/sona/SonaFigure";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 
-const search = z.object({ redirect: z.string().optional(), mode: z.string().optional(), code: z.string().optional() });
+const search = z.object({ redirect: z.string().optional() });
 
 export const Route = createFileRoute("/auth")({
   validateSearch: search,
@@ -40,56 +40,26 @@ function safePath(p?: string) {
 }
 
 function AuthPage() {
-  const { redirect, mode: searchMode, code } = Route.useSearch();
+  const { redirect } = Route.useSearch();
   const navigate = useNavigate();
-  const resetMode = searchMode === "reset";
   const [mode, setMode] = useState<"in" | "up">("in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [sent, setSent] = useState<"signup" | "reset" | null>(null);
-  const [recoveryReady, setRecoveryReady] = useState(!resetMode ? true : null);
+  const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    let active = true;
-    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (resetMode && (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN")) {
-        setRecoveryReady(!!session);
-      }
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user) navigate({ to: safePath(redirect) });
     });
-
-    async function checkSession() {
-      if (resetMode && code) {
-        const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error && active) setRecoveryReady(false);
-      }
-      const { data } = await supabase.auth.getSession();
-      if (!active) return;
-      if (resetMode) setRecoveryReady(!!data.session);
-      else if (data.session) navigate({ to: safePath(redirect) });
-    }
-
-    void checkSession();
-    return () => {
-      active = false;
-      listener.subscription.unsubscribe();
-    };
-  }, [code, navigate, redirect, resetMode]);
+  }, [navigate, redirect]);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
     setBusy(true);
     try {
-      if (resetMode) {
-        if (!recoveryReady) throw new Error("This reset link has expired. Request a new password-reset email.");
-        if (password !== confirmPassword) throw new Error("Passwords do not match.");
-        const { error } = await supabase.auth.updateUser({ password });
-        if (error) throw error;
-        toast.success("Password updated");
-        navigate({ to: "/feed" });
-      } else if (mode === "in") {
+      if (mode === "in") {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         navigate({ to: safePath(redirect) });
@@ -101,29 +71,10 @@ function AuthPage() {
         });
         if (error) throw error;
         if (data.session) navigate({ to: "/feed" });
-        else setSent("signup");
+        else setSent(true);
       }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function forgotPassword() {
-    if (!email.trim()) {
-      toast.error("Enter your email first.");
-      return;
-    }
-    setBusy(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-        redirectTo: `${window.location.origin}/auth?mode=reset`,
-      });
-      if (error) throw error;
-      setSent("reset");
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Could not send the reset email");
     } finally {
       setBusy(false);
     }
@@ -145,39 +96,19 @@ function AuthPage() {
         <Link to="/" className="heading-calm text-3xl">
           Sona
         </Link>
-        <SonaFigure pose={sent ? "envelope" : resetMode ? "cheer" : mode === "in" ? "wave" : "cheer"} className="mt-6 w-24" />
+        <SonaFigure pose={sent ? "envelope" : mode === "in" ? "wave" : "cheer"} className="mt-6 w-24" />
 
         <div className="mt-4 w-full rounded-[2rem] border border-border bg-card/80 p-7 shadow-soft">
           {sent ? (
             <div className="text-center">
               <h1 className="heading-calm text-3xl">Check your inbox</h1>
               <p className="subline mt-3">
-                {sent === "signup"
-                  ? <>We sent a confirmation link to {email}. Tap it and you'll land right in your feed.</>
-                  : <>We sent a password-reset link to {email}. Open it to choose a new password.</>}
+                We sent a confirmation link to {email}. Tap it and you'll land right in your feed.
               </p>
-              <Button variant="soft" className="mt-6" onClick={() => { setSent(null); setEmail(""); setPassword(""); setName(""); }}>
+              <Button variant="soft" className="mt-6" onClick={() => setSent(false)}>
                 Back
               </Button>
             </div>
-          ) : resetMode ? (
-            <>
-              <h1 className="heading-calm text-center text-3xl">Choose a new password</h1>
-              <p className="subline mt-2 text-center">
-                {recoveryReady === null ? "Checking your inbox link…" : recoveryReady ? "You are verified. Pick a new password for your Sona account." : "This reset link is expired or incomplete. Request a new one from the sign-in page."}
-              </p>
-              <form onSubmit={submit} className="mt-6 space-y-4">
-                <div className="space-y-1.5">
-                  <Label htmlFor="password">New password</Label>
-                  <Input id="password" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} className="rounded-full" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirm-password">Confirm new password</Label>
-                  <Input id="confirm-password" type="password" required minLength={6} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="rounded-full" />
-                </div>
-                <Button type="submit" variant="ink" size="lg" className="w-full" disabled={busy || recoveryReady !== true}>{busy ? "Saving…" : "Save new password"}</Button>
-              </form>
-            </>
           ) : (
             <>
               <h1 className="heading-calm text-center text-3xl">{mode === "in" ? "Welcome back" : "Join Sona"}</h1>
@@ -213,12 +144,6 @@ function AuthPage() {
                 </Button>
               </form>
 
-              {mode === "in" && (
-                <button type="button" className="mt-3 w-full text-center text-sm text-muted-foreground underline underline-offset-4" onClick={() => void forgotPassword()} disabled={busy}>
-                  Forgot password?
-                </button>
-              )}
-
               <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
                 <span className="h-px flex-1 bg-border" /> or <span className="h-px flex-1 bg-border" />
               </div>
@@ -234,7 +159,7 @@ function AuthPage() {
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
                 {mode === "in" ? "New here? " : "Already have an account? "}
-                <button className="text-foreground underline underline-offset-4" onClick={() => { setMode(mode === "in" ? "up" : "in"); setEmail(""); setPassword(""); setName(""); }}>
+                <button className="text-foreground underline underline-offset-4" onClick={() => setMode(mode === "in" ? "up" : "in")}>
                   {mode === "in" ? "Create an account" : "Sign in"}
                 </button>
               </p>

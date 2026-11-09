@@ -1,5 +1,4 @@
-import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { LogOut } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
@@ -7,14 +6,13 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { SonaFigure } from "@/components/sona/SonaFigure";
 import { CheckInOverlay } from "@/components/shell/CheckInOverlay";
-import { SonaHelper, type SonaNotification } from "@/components/shell/SonaHelper";
+import { SonaHelper } from "@/components/shell/SonaHelper";
 import { SonaProvider } from "@/components/shell/SonaContext";
 import { useSonaProfile } from "@/hooks/use-sona-profile";
 import { useFollowRequests } from "@/hooks/use-social";
 import { supabase } from "@/integrations/supabase/client";
 import { applyTheme, DEFAULT_THEME } from "@/lib/sona/theme";
 import { useActiveTime } from "@/lib/sona/usage";
-import { limitReached, needsSetup } from "@/lib/sona/setup";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -32,106 +30,33 @@ const NAV = [
 export function AppShell({ children, wide }: { children: ReactNode; wide?: boolean }) {
   const { profile, isLoading, isError, error, refetch, update } = useSonaProfile();
   const [checkIn, setCheckIn] = useState(false);
-  const notificationErrorRef = useRef<string | null>(null);
   const navigate = useNavigate();
-  const location = useLocation();
-  const setupRequired = Boolean(profile && needsSetup(profile.settings.setupCompleted));
-  useEffect(() => {
-    if (setupRequired && location.pathname !== '/setup') void navigate({ to: '/setup', replace: true });
-  }, [setupRequired, location.pathname, navigate]);
   const openCheckIn = useCallback(() => {
     window.dispatchEvent(new Event("sona:pause"));
     setCheckIn(true);
   }, []);
   const { minutesToday } = useActiveTime(openCheckIn, profile?.settings.checkIns ?? true);
 
-  // Persisted app notifications remain available after the originating page is closed.
-  const notificationHistory = useQuery({
-    queryKey: ["notifications", profile?.id],
-    enabled: Boolean(profile?.id),
-    refetchInterval: 15_000,
-    queryFn: async () => {
-      if (!profile) return [];
-      // RLS already limits this result to auth.uid(). Avoid a second client-
-      // side recipient filter so a stale cached profile id cannot hide a
-      // notification from the signed-in recipient.
-      const { data, error } = await supabase.from("notifications").select("id,kind,title,body,match_id,created_at,read_at").order("created_at", { ascending: false }).limit(50);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-  useEffect(() => {
-    const message = notificationHistory.error?.message ?? null;
-    if (message && message !== notificationErrorRef.current) {
-      notificationErrorRef.current = message;
-      toast.error("Couldn't load Sona notifications", {
-        description: message,
-      });
-    } else if (!message) {
-      notificationErrorRef.current = null;
-    }
-  }, [notificationHistory.error]);
-
-  const notificationClient = useQueryClient();
-  useEffect(() => {
-    if (!profile?.id) return;
-    const channel = supabase.channel(`game-notifications:${profile.id}`)
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
-        void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
-      })
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "notifications", filter: `recipient_id=eq.${profile.id}` }, () => {
-        void notificationClient.invalidateQueries({ queryKey: ["notifications", profile.id] });
-      })
-      .subscribe();
-    return () => { void supabase.removeChannel(channel); };
-  }, [profile?.id, notificationClient]);
-
-  // Follow requests are included in the Sona Notification Center alongside persisted notifications.
+  // Follow-request notifications: a badge on Profile, plus a gentle toast when a new one arrives.
   const requests = useFollowRequests(profile?.id, { poll: true });
   const pendingCount = requests.data?.length ?? 0;
-
-  const sonaNotifications: SonaNotification[] = [
-    ...(notificationHistory.data ?? []).map((notification) => ({
-      id: notification.id,
-      title: notification.title,
-      body: notification.body,
-      createdAt: notification.created_at,
-      read: Boolean(notification.read_at),
-      kind: notification.kind,
-      onOpen: () => {
-        if (!notification.read_at) void supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", notification.id);
-        if (notification.kind === "game_invite" && notification.match_id) {
-          window.sessionStorage.setItem("sona:game-invite", notification.match_id);
-          window.dispatchEvent(new CustomEvent("sona:open-game-invite", { detail: { matchId: notification.match_id } }));
-          void navigate({ to: "/circle" });
-        } else if (notification.kind === "game_turn") {
-          void navigate({ to: "/circle" });
-        }
-      },
-    })),
-    ...(requests.data ?? []).map((request) => ({
-      id: `follow-request-${request.id}`,
-      title: `${request.person?.display_name ?? "Someone"} asked to follow you`,
-      body: "Open your profile to review the request.",
-      createdAt: request.createdAt,
-      read: false,
-      kind: "follow_request",
-      onOpen: () => { void navigate({ to: "/profile" }); },
-    })),
-  ].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  const [snoozeUntil, setSnoozeUntil] = useState<number | null>(null);
-  const [now, setNow] = useState(0);
+  const lastCount = useRef<number | null>(null);
   useEffect(() => {
-    const tick = () => setNow(Date.now());
-    tick();
-    const timer = window.setInterval(tick, 1000);
-    return () => window.clearInterval(timer);
-  }, []);
+    if (!requests.isSuccess) return;
+    if (lastCount.current !== null && pendingCount > lastCount.current) {
+      const who = requests.data[0]?.person?.display_name ?? "Someone";
+      toast(`${who} asked to follow you`, { action: { label: "Review", onClick: () => navigate({ to: "/profile" }) } });
+    }
+    lastCount.current = pendingCount;
+  }, [pendingCount, requests.isSuccess, requests.data, navigate]);
+    const [snoozed, setSnoozed] = useState(false);
   const timeLimit = profile?.settings.timeLimit ?? 45;
-  const isLimitReached = !setupRequired && location.pathname !== '/accountability' && location.pathname !== '/care' && location.pathname !== '/settings' && limitReached(minutesToday, timeLimit, profile?.settings.accountability ?? false, snoozeUntil, now);
-  useEffect(() => {
-    if (isLimitReached) window.dispatchEvent(new Event('sona:pause'));
-  }, [isLimitReached]);
+  const isLimitReached = Boolean(
+    profile?.settings.accountability &&
+    timeLimit > 0 &&
+    minutesToday >= timeLimit &&
+    !snoozed
+  );
 
 
   // Keep <html> in sync with the saved theme (preset / custom colour / dark mode).
@@ -203,10 +128,8 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
           </div>
         ) : (
           <SonaProvider value={{ profile, update }}>
-            {setupRequired && location.pathname !== '/setup' ? <p className="subline py-12 text-center">Opening Set Up…</p> : children}
-            {(profile.settings.sonaEnabled || sonaNotifications.some((notification) => !notification.read)) && (
-              <SonaHelper minutesToday={minutesToday} notifications={sonaNotifications} />
-            )}
+            {children}
+            {profile.settings.sonaEnabled && <SonaHelper minutesToday={minutesToday} onRest={openCheckIn} />}
             {checkIn && <CheckInOverlay onClose={() => setCheckIn(false)} />}             {isLimitReached && (
               <div 
                 className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-4 backdrop-blur-md"
@@ -235,7 +158,7 @@ export function AppShell({ children, wide }: { children: ReactNode; wide?: boole
                     <Button 
                       variant="ghost" 
                       className="w-full text-xs text-muted-foreground hover:text-foreground"
-                      onClick={() => setSnoozeUntil(Date.now() + 5 * 60_000)}
+                      onClick={() => setSnoozed(true)}
                     >
                       Snooze for 5 more minutes
                     </Button>
