@@ -49,7 +49,10 @@ export function ShareDialog({ post, open, onOpenChange }: { post: UserPost; open
     setBusy(id);
     const { error } = await supabase.rpc("share_post_to", { _post: post.id, _recipient: id });
     setBusy(null);
-    if (error) return toast.error(error.message);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
     setSent((s) => [...s, id]);
     toast.success("Sent");
   }

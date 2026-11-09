@@ -22,7 +22,7 @@ import { moodColor, moodLabel, type MoodId, type SonaLook } from "@/lib/sona/typ
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/circle")({
-  validateSearch: (s: Record<string, unknown>): { match?: string } => (typeof s.match === "string" ? { match: s.match } : {}),
+  validateSearch: (s: Record<string, unknown>): { match?: string } => (typeof s["match"] === "string" ? { match: s["match"] as string } : {}),
   head: () => ({
     meta: [
       { title: "Circle — Sona" },

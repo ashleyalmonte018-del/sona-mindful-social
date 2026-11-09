@@ -11,9 +11,9 @@ export interface SharedPostCard {
     media_type: string;
     image_path: string | null;
     audience: string;
-    disclosures: unknown;
+    disclosures: { edited?: boolean; filter?: boolean; paid?: boolean } | null;
     disclosure_note: string | null;
-    labels: unknown;
+    labels: string[] | null;
     created_at: string;
   };
   author: { id: string; display_name: string; handle: string | null };
